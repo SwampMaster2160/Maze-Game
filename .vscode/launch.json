@@ -6,11 +6,22 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "cmd",
-            "args": ["/c", "build"],
+            "args": ["/c", "build_debug"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
-			"console": "integratedTerminal",
+            "console": "integratedTerminal",
+        },
+        {
+            "name": "Release",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "cmd",
+            "args": ["/c", "build_release"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "integratedTerminal",
         }
     ]
 }
