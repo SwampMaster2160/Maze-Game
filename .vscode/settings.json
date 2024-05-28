@@ -1,0 +1,6 @@
+{
+	"files.associations": {
+		"*.asm": "dasm",
+		"windows.h": "c"
+	}
+}
