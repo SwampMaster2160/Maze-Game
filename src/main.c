@@ -111,11 +111,15 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 	// Message loop
 	while (TRUE) {
 		BOOL result;
-		result = GetMessageW(&temp.windowMessage, NULL, 0, 0);
-		if (result == 0 || result == -1) {
+		result = GetMessageA(&temp.windowMessage, NULL, 0, 0);
+		if (result == 0) {
 			break;
 		}
+		if (result == -1) {
+			MessageBoxA(NULL, "GetMessageA failed", "Error", MB_OK);
+			return 0;
+		}
 		TranslateMessage(&temp.windowMessage);
-		DispatchMessageW(&temp.windowMessage);
+		DispatchMessageA(&temp.windowMessage);
 	}
 }
