@@ -14,6 +14,8 @@ typedef struct tagClassExtraData
 {
 	WORD windowWidth;
 	WORD windowHeight;
+	float cameraRotation;
+	DWORD lastTime;
 } ClassExtraData;
 
 const float PI = 3.14159265358979323846;
@@ -133,7 +135,7 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 			glMatrixMode(GL_PROJECTION);
 			glLoadIdentity();
 			gluPerspective(45, (float)width/(float)height, 0.1, 100);
-			gluLookAt(3, -3, 2, 0, 0, 0, 0, 0, 1);
+			gluLookAt(3 * cos(classExtraData->cameraRotation), 3 * sin(classExtraData->cameraRotation), 2, 0, 0, 0, 0, 0, 1);
 
 			glClear(GL_COLOR_BUFFER_BIT);
 			glBegin(GL_TRIANGLES);
@@ -146,6 +148,7 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 			glFlush();
 
 			BeginPaint(window, &paintStruct);
+			SwapBuffers(paintStruct.hdc);
 			EndPaint(window, &paintStruct);
 			break;
 		}
@@ -154,11 +157,19 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 		PostQuitMessage(0);
 		break;
 	case WM_SIZE:
-		{
-			classExtraData->windowWidth = LOWORD(lParam);
-			classExtraData->windowHeight = HIWORD(lParam);
-		}
+		classExtraData->windowWidth = LOWORD(lParam);
+		classExtraData->windowHeight = HIWORD(lParam);
 		break;
+	case WM_TIMER:
+		{
+			DWORD time = GetTickCount();
+			DWORD deltaTime = time - classExtraData->lastTime;
+			if (deltaTime < 10) break;
+			classExtraData->cameraRotation += (float)deltaTime / 1000 / 1;
+			RedrawWindow(window, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
+			classExtraData->lastTime = time;
+			break;
+		}
 	default:
 		return DefWindowProc(window, message, wParam, lParam);
 	}
@@ -206,7 +217,11 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 		MessageBoxA(NULL, "GetDC failed", "Error", MB_OK);
 		return 0;
 	}
+	// Create timer
+	SetTimer(window, 0, 1000 / 60, NULL);
 	// Set window extra data
+	classExtraData.cameraRotation = 0;
+	classExtraData.lastTime = GetTickCount();
 	SetClassLongA(window, 0, (LONG)&classExtraData);
 	// Create render context
 	{
@@ -214,7 +229,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 		memset(&pixelFormatData, 0, sizeof(pixelFormatData));
 		pixelFormatData.nSize = sizeof(pixelFormatData);
 		pixelFormatData.nVersion = 1;
-		pixelFormatData.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL;
+		pixelFormatData.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
 		pixelFormatData.iPixelType = PFD_TYPE_RGBA; //PFD_TYPE_COLORINDEX;
 		pixelFormatData.cColorBits = 32;
 		pixelFormatData.cDepthBits = 24;
@@ -253,7 +268,12 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 	{
 		MSG windowMessage;
 		BOOL result;
+		//DWORD time;
+		//DWORD timeElapsed;
 		result = GetMessageA(&windowMessage, NULL, 0, 0);
+		//time = GetTickCount();
+		//timeElapsed = time - classExtraData.lastTime;
+		//classExtraData.cameraRotation += (float)timeElapsed / 1000 / 1;
 		if (result == 0) break;
 		if (result == -1)
 		{
@@ -262,5 +282,9 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 		}
 		TranslateMessage(&windowMessage);
 		DispatchMessageA(&windowMessage);
+		//classExtraData.lastTime = time;
+		//if (timeElapsed > 10) {
+		//	RedrawWindow(window, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
+		//}
 	}
 }
