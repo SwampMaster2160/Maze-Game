@@ -10,6 +10,12 @@
 // Based on https://github.com/vbsw/opengl-win32-example/blob/master/Main.cpp
 // For Microsoft Visual C++ 4.0 for Windows versions 95 - 11
 
+typedef struct tagClassExtraData
+{
+	WORD windowWidth;
+	WORD windowHeight;
+} ClassExtraData;
+
 const float PI = 3.14159265358979323846;
 
 void drawCube(float x, float y, float z) {
@@ -107,15 +113,21 @@ void drawCube(float x, float y, float z) {
 
 static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	ClassExtraData *classExtraData;
+	classExtraData = (ClassExtraData *)GetClassLong(window, 0);
+	if (classExtraData == NULL)
+	{
+		return DefWindowProc(window, message, wParam, lParam);
+	}
 	switch (message)
 	{
 	case WM_PAINT:
 		{
-			UINT width = 320;
-			UINT height = 240;
-			//float zoomFactor = ((float)width / (float)height) / 1;
+			UINT width = classExtraData->windowWidth;
+			UINT height = classExtraData->windowHeight;
 			PAINTSTRUCT paintStruct;
 
+			glViewport(0, 0, width, height);
 			glEnable(GL_DEPTH_TEST);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			glMatrixMode(GL_PROJECTION);
@@ -143,8 +155,8 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 		break;
 	case WM_SIZE:
 		{
-			UINT width = LOWORD(lParam);
-			UINT height = HIWORD(lParam);
+			classExtraData->windowWidth = LOWORD(lParam);
+			classExtraData->windowHeight = HIWORD(lParam);
 		}
 		break;
 	default:
@@ -160,14 +172,14 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 	int pixelFormat;
 	BOOL boolResult;
 	HGLRC renderContext;
+	ClassExtraData classExtraData;
 	// Register window class
 	{
 		WNDCLASSA windowClassData;
 		memset(&windowClassData, 0, sizeof(windowClassData));
 		windowClassData.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
 		windowClassData.lpfnWndProc = (WNDPROC)windowProcess;
-		windowClassData.cbClsExtra = 0;
-		windowClassData.cbWndExtra = 0;
+		windowClassData.cbClsExtra = sizeof(LONG);
 		windowClassData.hInstance = instance;
 		windowClassData.hIcon = LoadIcon(NULL, IDI_WINLOGO);
 		windowClassData.hCursor = LoadCursor(NULL, IDC_ARROW);
@@ -194,6 +206,8 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 		MessageBoxA(NULL, "GetDC failed", "Error", MB_OK);
 		return 0;
 	}
+	// Set window extra data
+	SetClassLongA(window, 0, (LONG)&classExtraData);
 	// Create render context
 	{
 		PIXELFORMATDESCRIPTOR pixelFormatData;
