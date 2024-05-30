@@ -14,11 +14,18 @@ typedef struct tagClassExtraData
 {
 	WORD windowWidth;
 	WORD windowHeight;
+	WORD windowWidthBeforeFullscreen;
+	WORD windowHeightBeforeFullscreen;
+	SHORT windowXBeforeFullscreen;
+	SHORT windowYBeforeFullscreen;
 	float cameraRotation;
 	DWORD lastTime;
+	BOOL isFullscreen;
 } ClassExtraData;
 
 const float PI = 3.14159265358979323846;
+const DWORD WINDOW_STYLE_WINDOWED = WS_OVERLAPPEDWINDOW;
+const DWORD WINDOW_STYLE_FULLSCREEN = WS_VISIBLE;
 
 void drawCube(float x, float y, float z) {
 	float north = y + 0.5;
@@ -141,7 +148,6 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 			glBegin(GL_TRIANGLES);
 
 			drawCube(0, 0, 0);
-
 			drawCube(0, 3, 0);
 
 			glEnd();
@@ -160,6 +166,10 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 		classExtraData->windowWidth = LOWORD(lParam);
 		classExtraData->windowHeight = HIWORD(lParam);
 		break;
+	//case WM_MOVE:
+	//	classExtraData->windowX = (SHORT)LOWORD(lParam);
+	//	classExtraData->windowY = (SHORT)HIWORD(lParam);
+	//	break;
 	case WM_TIMER:
 		{
 			DWORD time = GetTickCount();
@@ -170,6 +180,38 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 			classExtraData->lastTime = time;
 			break;
 		}
+	case WM_KEYUP:
+		switch (wParam)
+		{
+		case VK_F11:
+			classExtraData->isFullscreen = !classExtraData->isFullscreen;
+			if (classExtraData->isFullscreen)
+			{
+				RECT windowRect;
+				BOOL result = GetWindowRect(window, &windowRect);
+				int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+				int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+				if (!result) break;
+				classExtraData->windowWidthBeforeFullscreen = windowRect.right - windowRect.left;
+				classExtraData->windowHeightBeforeFullscreen = windowRect.bottom - windowRect.top;
+				classExtraData->windowXBeforeFullscreen = windowRect.left;
+				classExtraData->windowYBeforeFullscreen = windowRect.top;
+				SetWindowLongA(window, GWL_STYLE, WINDOW_STYLE_FULLSCREEN);
+				SetWindowPos(window, HWND_TOPMOST, 0, 0, screenWidth, screenHeight, SWP_SHOWWINDOW);
+				break;
+			}
+			SetWindowLongA(window, GWL_STYLE, WINDOW_STYLE_WINDOWED);
+			SetWindowPos
+			(
+				window, HWND_TOPMOST,
+				classExtraData->windowXBeforeFullscreen,
+				classExtraData->windowYBeforeFullscreen,
+				classExtraData->windowWidthBeforeFullscreen,
+				classExtraData->windowHeightBeforeFullscreen,
+				SWP_SHOWWINDOW
+			);
+		}
+		break;
 	default:
 		return DefWindowProc(window, message, wParam, lParam);
 	}
@@ -184,6 +226,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 	BOOL boolResult;
 	HGLRC renderContext;
 	ClassExtraData classExtraData;
+	UINT timer;
 	// Register window class
 	{
 		WNDCLASSA windowClassData;
@@ -205,7 +248,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 		return 0;
 	}
 	// Create window
-	window = CreateWindowA((LPCSTR)windowClass, "Windows OpenGL", WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, 100, 100, 320, 240, NULL, NULL, instance, NULL);
+	window = CreateWindowA((LPCSTR)windowClass, "Windows OpenGL", WINDOW_STYLE_WINDOWED, 100, 100, 320, 240, NULL, NULL, instance, NULL);
 	if (window == NULL)
 	{
 		MessageBoxA(NULL, "CreateWindowA failed", "Error", MB_OK);
@@ -218,9 +261,15 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 		return 0;
 	}
 	// Create timer
-	SetTimer(window, 0, 1000 / 60, NULL);
+	timer = SetTimer(window, 0, 1000 / 60, NULL);
+	if (timer == 0)
+	{
+		MessageBoxA(NULL, "SetTimer failed", "Error", MB_OK);
+		return 0;
+	}
 	// Set window extra data
 	classExtraData.cameraRotation = 0;
+	classExtraData.isFullscreen = FALSE;
 	classExtraData.lastTime = GetTickCount();
 	SetClassLongA(window, 0, (LONG)&classExtraData);
 	// Create render context
@@ -268,12 +317,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 	{
 		MSG windowMessage;
 		BOOL result;
-		//DWORD time;
-		//DWORD timeElapsed;
 		result = GetMessageA(&windowMessage, NULL, 0, 0);
-		//time = GetTickCount();
-		//timeElapsed = time - classExtraData.lastTime;
-		//classExtraData.cameraRotation += (float)timeElapsed / 1000 / 1;
 		if (result == 0) break;
 		if (result == -1)
 		{
@@ -282,9 +326,8 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 		}
 		TranslateMessage(&windowMessage);
 		DispatchMessageA(&windowMessage);
-		//classExtraData.lastTime = time;
-		//if (timeElapsed > 10) {
-		//	RedrawWindow(window, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
-		//}
 	}
+	// Cleanup
+	wglMakeCurrent(NULL, NULL);
+	KillTimer(window, timer);
 }
