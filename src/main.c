@@ -18,6 +18,7 @@ typedef struct tagClassExtraData
 	WORD windowHeightBeforeFullscreen;
 	SHORT windowXBeforeFullscreen;
 	SHORT windowYBeforeFullscreen;
+	int windowShowStateBeforeFullscreen;
 	float cameraRotation;
 	DWORD lastTime;
 	BOOL isFullscreen;
@@ -166,10 +167,6 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 		classExtraData->windowWidth = LOWORD(lParam);
 		classExtraData->windowHeight = HIWORD(lParam);
 		break;
-	//case WM_MOVE:
-	//	classExtraData->windowX = (SHORT)LOWORD(lParam);
-	//	classExtraData->windowY = (SHORT)HIWORD(lParam);
-	//	break;
 	case WM_TIMER:
 		{
 			DWORD time = GetTickCount();
@@ -196,6 +193,8 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 				classExtraData->windowHeightBeforeFullscreen = windowRect.bottom - windowRect.top;
 				classExtraData->windowXBeforeFullscreen = windowRect.left;
 				classExtraData->windowYBeforeFullscreen = windowRect.top;
+				classExtraData->windowShowStateBeforeFullscreen = SW_SHOW;
+				if (IsZoomed(window)) classExtraData->windowShowStateBeforeFullscreen = SW_SHOWMAXIMIZED;
 				SetWindowLongA(window, GWL_STYLE, WINDOW_STYLE_FULLSCREEN);
 				SetWindowPos(window, HWND_TOPMOST, 0, 0, screenWidth, screenHeight, SWP_SHOWWINDOW);
 				break;
@@ -208,10 +207,14 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 				classExtraData->windowYBeforeFullscreen,
 				classExtraData->windowWidthBeforeFullscreen,
 				classExtraData->windowHeightBeforeFullscreen,
-				SWP_SHOWWINDOW
+				SWP_HIDEWINDOW
 			);
+			ShowWindow(window, classExtraData->windowShowStateBeforeFullscreen);
+		case VK_ESCAPE:
+			DestroyWindow(window);
+			PostQuitMessage(0);
+			break;
 		}
-		break;
 	default:
 		return DefWindowProc(window, message, wParam, lParam);
 	}
