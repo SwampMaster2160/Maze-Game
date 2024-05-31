@@ -1,11 +1,14 @@
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "gdi32.lib")
 #pragma comment(lib, "opengl32.lib")
+#pragma comment(lib, "src/opengl32.lib")
 #pragma comment(lib, "glu32.lib")
 #include <math.h>
 #include <windows.h>
 #include <gl/GL.h>
 #include <gl/GLU.h>
+WINGDIAPI void glGenTextures(GLsizei n, GLuint *textures);
+WINGDIAPI void glBindTexture(GLenum target, GLuint texture);
 
 // Based on https://github.com/vbsw/opengl-win32-example/blob/master/Main.cpp
 // For Microsoft Visual C++ 4.0 for Windows versions 95 - 11
@@ -22,6 +25,8 @@ typedef struct tagClassExtraData
 	float cameraRotation;
 	DWORD lastTime;
 	BOOL isFullscreen;
+	GLuint tex;
+	//BITMAP bitmap;
 } ClassExtraData;
 
 const float PI = 3.14159265358979323846;
@@ -159,14 +164,21 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 
 			glViewport(0, 0, width, height);
 			glEnable(GL_DEPTH_TEST);
+			glEnable(GL_TEXTURE_2D);
+			glBindTexture(GL_TEXTURE_2D, classExtraData->tex);
+			//glNewList
+			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			glMatrixMode(GL_PROJECTION);
 			glLoadIdentity();
 			gluPerspective(45, (float)width/(float)height, 0.1, 100);
 			gluLookAt(3 * cos(classExtraData->cameraRotation), 3 * sin(classExtraData->cameraRotation), 2, 0, 0, 0, 0, 0, 1);
+			//glTexImage2D(GL_TEXTURE_2D, 0, 4, classExtraData->bitmap.bmWidth, classExtraData->bitmap.bmHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, classExtraData->bitmap.bmBits);
 
 			glClear(GL_COLOR_BUFFER_BIT);
-			glBegin(GL_TRIANGLES);
+			glBegin(GL_QUADS);
 
 			//drawCube(0, 0, 0);
 			//drawCube(0, 3, 0);
@@ -185,17 +197,24 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 						float west = x - 0.5;
 						float bottom = -0.5;
 						glColor3f(1.0f, 0.0f, 0.0f); // Red
-						glVertex3f(west, north, bottom); // Top left
-						glColor3f(0.0f, 1.0f, 0.0f); // Green
-						glVertex3f(west, south, bottom); // Bottom left
-						glColor3f(0.0f, 0.0f, 1.0f); // Blue
-						glVertex3f(east, south, bottom); // Bottom right
-						glColor3f(1.0f, 0.0f, 0.0f); // Red
-						glVertex3f(west, north, bottom); // Top left
-						glColor3f(0.0f, 0.0f, 1.0f); // Blue
-						glVertex3f(east, south, bottom); // Bottom right
-						glColor3f(1.0f, 1.0f, 0.0f); // Yellow
-						glVertex3f(east, north, bottom); // Top right
+						//glTexCoord2f(0, 1);
+						//glVertex3f(west, north, bottom); // Top left
+						////glColor3f(0.0f, 1.0f, 0.0f); // Green
+						//glTexCoord2f(0, 0);
+						//glVertex3f(west, south, bottom); // Bottom left
+						////glColor3f(0.0f, 0.0f, 1.0f); // Blue
+						//glTexCoord2f(1, 0);
+						//glVertex3f(east, south, bottom); // Bottom right
+						//glColor3f(1.0f, 0.0f, 0.0f); // Red
+						//glVertex3f(west, north, bottom); // Top left
+						//glColor3f(0.0f, 0.0f, 1.0f); // Blue
+						//glVertex3f(east, south, bottom); // Bottom right
+						//glColor3f(1.0f, 1.0f, 0.0f); // Yellow
+						//glVertex3f(east, north, bottom); // Top right
+						glTexCoord2f (0.0, 1.0); glVertex3f (west, north, bottom);
+						glTexCoord2f (1.0, 1.0); glVertex3f (east, north, bottom);
+						glTexCoord2f (1.0, 0.0); glVertex3f (east, south, bottom);
+						glTexCoord2f (0.0, 0.0); glVertex3f (west, south, bottom);
 					}
 				}
 			}
@@ -277,6 +296,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 	HDC windowDeviceContext;
 	int pixelFormat;
 	BOOL boolResult;
+	int intResult;
 	HGLRC renderContext;
 	ClassExtraData classExtraData;
 	UINT timer;
@@ -365,6 +385,40 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 	// Show window
 	ShowWindow(window, iCmdShow);
 	UpdateWindow(window);
+	//
+	OutputDebugStringA("A");
+	{
+		HBITMAP hBitmap = LoadBitmapA(instance, "TEST");
+		BITMAP bitmap;
+		GLuint tex = 420;
+		if (hBitmap == NULL)
+		{
+			MessageBoxA(NULL, "LoadBitmapA failed", "Error", MB_OK);
+			return 0;
+		}
+		intResult = GetObjectA(hBitmap, sizeof(BITMAP), &bitmap);
+		if (intResult == 0)
+		{
+			MessageBoxA(NULL, "GetObjectA failed", "Error", MB_OK);
+			return 0;
+		}
+		//glTexImage2D
+		//glTexImage2D
+		glGenTextures(1, &tex);
+		if (tex == 0 || tex == 420)
+		{
+			MessageBoxA(NULL, "glGenTextures failed", "Error", MB_OK);
+			return 0;
+		}
+		//glBindTexture(GL_TEXTURE_2D, tex);
+		classExtraData.tex = tex;
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, bitmap.bmWidth, bitmap.bmHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, bitmap.bmBits);
+		//if (((BYTE *)bitmap.bmBits)[0] != 85) {
+		//	MessageBoxA(NULL, "A failed", "Error", MB_OK);
+		//	return 0;
+		//}
+		//glBindTexture(GL_TEXTURE_2D, 0);
+	}
 	// Message loop
 	while (TRUE)
 	{
