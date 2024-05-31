@@ -26,7 +26,7 @@ typedef struct tagClassExtraData
 	DWORD lastTime;
 	BOOL isFullscreen;
 	GLuint tex;
-	//BITMAP bitmap;
+	BITMAP bitmap;
 } ClassExtraData;
 
 const float PI = 3.14159265358979323846;
@@ -161,15 +161,20 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 			UINT height = classExtraData->windowHeight;
 			PAINTSTRUCT paintStruct;
 			int x;
+			const BYTE BITS[4] = {0, 20, 40, 255};
+
+			glBindTexture(GL_TEXTURE_2D, classExtraData->tex);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, classExtraData->bitmap.bmWidth, classExtraData->bitmap.bmHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, classExtraData->bitmap.bmBits);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, 2, 2, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, BITS);
+			glBindTexture(GL_TEXTURE_2D, 0);
 
 			glViewport(0, 0, width, height);
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_TEXTURE_2D);
-			glBindTexture(GL_TEXTURE_2D, classExtraData->tex);
 			//glNewList
 			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			glMatrixMode(GL_PROJECTION);
 			glLoadIdentity();
@@ -178,6 +183,8 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 			//glTexImage2D(GL_TEXTURE_2D, 0, 4, classExtraData->bitmap.bmWidth, classExtraData->bitmap.bmHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, classExtraData->bitmap.bmBits);
 
 			glClear(GL_COLOR_BUFFER_BIT);
+			glBindTexture(GL_TEXTURE_2D, classExtraData->tex);
+    		glEnable(GL_TEXTURE_2D);
 			glBegin(GL_QUADS);
 
 			//drawCube(0, 0, 0);
@@ -220,6 +227,8 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 			}
 
 			glEnd();
+			glDisable(GL_TEXTURE_2D);
+    		glBindTexture(GL_TEXTURE_2D, 0);
 			glFlush();
 
 			BeginPaint(window, &paintStruct);
@@ -389,14 +398,14 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 	OutputDebugStringA("A");
 	{
 		HBITMAP hBitmap = LoadBitmapA(instance, "TEST");
-		BITMAP bitmap;
+		//BITMAP bitmap;
 		GLuint tex = 420;
 		if (hBitmap == NULL)
 		{
 			MessageBoxA(NULL, "LoadBitmapA failed", "Error", MB_OK);
 			return 0;
 		}
-		intResult = GetObjectA(hBitmap, sizeof(BITMAP), &bitmap);
+		intResult = GetObjectA(hBitmap, sizeof(BITMAP), &classExtraData.bitmap);
 		if (intResult == 0)
 		{
 			MessageBoxA(NULL, "GetObjectA failed", "Error", MB_OK);
@@ -412,7 +421,6 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 		}
 		//glBindTexture(GL_TEXTURE_2D, tex);
 		classExtraData.tex = tex;
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, bitmap.bmWidth, bitmap.bmHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, bitmap.bmBits);
 		//if (((BYTE *)bitmap.bmBits)[0] != 85) {
 		//	MessageBoxA(NULL, "A failed", "Error", MB_OK);
 		//	return 0;
