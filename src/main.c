@@ -28,98 +28,117 @@ const float PI = 3.14159265358979323846;
 const DWORD WINDOW_STYLE_WINDOWED = WS_OVERLAPPEDWINDOW;
 const DWORD WINDOW_STYLE_FULLSCREEN = WS_VISIBLE;
 
-void drawCube(float x, float y, float z) {
-	float north = y + 0.5;
-	float east = x + 0.5;
-	float south = y - 0.5;
-	float west = x - 0.5;
-	float top = z + 0.5;
-	float bottom = z - 0.5;
-	// North
-	glColor3f(1.0f, 0.0f, 0.0f); // Red
-	glVertex3f(east, north, top); // Top left
-	glColor3f(0.0f, 1.0f, 0.0f); // Green
-	glVertex3f(east, north, bottom); // Bottom left
-	glColor3f(0.0f, 0.0f, 1.0f); // Blue
-	glVertex3f(west, north, bottom); // Bottom right
+const BYTE ROOM[16][16] = {
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
+	{0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+};
 
-	glColor3f(1.0f, 0.0f, 0.0f); // Red
-	glVertex3f(east, north, top); // Top left
-	glColor3f(0.0f, 0.0f, 1.0f); // Blue
-	glVertex3f(west, north, bottom); // Bottom right
-	glColor3f(1.0f, 1.0f, 0.0f); // Yellow
-	glVertex3f(west, north, top); // Top right
-	// East
-	glColor3f(1.0f, 0.0f, 0.0f); // Red
-	glVertex3f(east, south, top); // Top left
-	glColor3f(0.0f, 1.0f, 0.0f); // Green
-	glVertex3f(east, south, bottom); // Bottom left
-	glColor3f(0.0f, 0.0f, 1.0f); // Blue
-	glVertex3f(east, north, bottom); // Bottom right
-
-	glColor3f(1.0f, 0.0f, 0.0f); // Red
-	glVertex3f(east, south, top); // Top left
-	glColor3f(0.0f, 0.0f, 1.0f); // Blue
-	glVertex3f(east, north, bottom); // Bottom right
-	glColor3f(1.0f, 1.0f, 0.0f); // Yellow
-	glVertex3f(east, north, top); // Top right
-	// South
-	glColor3f(1.0f, 0.0f, 0.0f); // Red
-	glVertex3f(west, south, top); // Top left
-	glColor3f(0.0f, 1.0f, 0.0f); // Green
-	glVertex3f(west, south, bottom); // Bottom left
-	glColor3f(0.0f, 0.0f, 1.0f); // Blue
-	glVertex3f(east, south, bottom); // Bottom right
-
-	glColor3f(1.0f, 0.0f, 0.0f); // Red
-	glVertex3f(west, south, top); // Top left
-	glColor3f(0.0f, 0.0f, 1.0f); // Blue
-	glVertex3f(east, south, bottom); // Bottom right
-	glColor3f(1.0f, 1.0f, 0.0f); // Yellow
-	glVertex3f(east, south, top); // Top right
-	// West
-	glColor3f(1.0f, 0.0f, 0.0f); // Red
-	glVertex3f(west, north, top); // Top left
-	glColor3f(0.0f, 1.0f, 0.0f); // Green
-	glVertex3f(west, north, bottom); // Bottom left
-	glColor3f(0.0f, 0.0f, 1.0f); // Blue
-	glVertex3f(west, south, bottom); // Bottom right
-
-	glColor3f(1.0f, 0.0f, 0.0f); // Red
-	glVertex3f(west, north, top); // Top left
-	glColor3f(0.0f, 0.0f, 1.0f); // Blue
-	glVertex3f(west, south, bottom); // Bottom right
-	glColor3f(1.0f, 1.0f, 0.0f); // Yellow
-	glVertex3f(west, south, top); // Top right
-	// Top
-	glColor3f(1.0f, 0.0f, 0.0f); // Red
-	glVertex3f(west, north, top); // Top left
-	glColor3f(0.0f, 1.0f, 0.0f); // Green
-	glVertex3f(west, south, top); // Bottom left
-	glColor3f(0.0f, 0.0f, 1.0f); // Blue
-	glVertex3f(east, south, top); // Bottom right
-
-	glColor3f(1.0f, 0.0f, 0.0f); // Red
-	glVertex3f(west, north, top); // Top left
-	glColor3f(0.0f, 0.0f, 1.0f); // Blue
-	glVertex3f(east, south, top); // Bottom right
-	glColor3f(1.0f, 1.0f, 0.0f); // Yellow
-	glVertex3f(east, north, top); // Top right
-	// Bottom
-	glColor3f(1.0f, 0.0f, 0.0f); // Red
-	glVertex3f(west, north, bottom); // Top left
-	glColor3f(0.0f, 1.0f, 0.0f); // Green
-	glVertex3f(west, south, bottom); // Bottom left
-	glColor3f(0.0f, 0.0f, 1.0f); // Blue
-	glVertex3f(east, south, bottom); // Bottom right
-
-	glColor3f(1.0f, 0.0f, 0.0f); // Red
-	glVertex3f(west, north, bottom); // Top left
-	glColor3f(0.0f, 0.0f, 1.0f); // Blue
-	glVertex3f(east, south, bottom); // Bottom right
-	glColor3f(1.0f, 1.0f, 0.0f); // Yellow
-	glVertex3f(east, north, bottom); // Top right
-}
+//void drawCube(float x, float y, float z) {
+//	float north = y + 0.5;
+//	float east = x + 0.5;
+//	float south = y - 0.5;
+//	float west = x - 0.5;
+//	float top = z + 0.5;
+//	float bottom = z - 0.5;
+//	// North
+//	glColor3f(1.0f, 0.0f, 0.0f); // Red
+//	glVertex3f(east, north, top); // Top left
+//	glColor3f(0.0f, 1.0f, 0.0f); // Green
+//	glVertex3f(east, north, bottom); // Bottom left
+//	glColor3f(0.0f, 0.0f, 1.0f); // Blue
+//	glVertex3f(west, north, bottom); // Bottom right
+//
+//	glColor3f(1.0f, 0.0f, 0.0f); // Red
+//	glVertex3f(east, north, top); // Top left
+//	glColor3f(0.0f, 0.0f, 1.0f); // Blue
+//	glVertex3f(west, north, bottom); // Bottom right
+//	glColor3f(1.0f, 1.0f, 0.0f); // Yellow
+//	glVertex3f(west, north, top); // Top right
+//	// East
+//	glColor3f(1.0f, 0.0f, 0.0f); // Red
+//	glVertex3f(east, south, top); // Top left
+//	glColor3f(0.0f, 1.0f, 0.0f); // Green
+//	glVertex3f(east, south, bottom); // Bottom left
+//	glColor3f(0.0f, 0.0f, 1.0f); // Blue
+//	glVertex3f(east, north, bottom); // Bottom right
+//
+//	glColor3f(1.0f, 0.0f, 0.0f); // Red
+//	glVertex3f(east, south, top); // Top left
+//	glColor3f(0.0f, 0.0f, 1.0f); // Blue
+//	glVertex3f(east, north, bottom); // Bottom right
+//	glColor3f(1.0f, 1.0f, 0.0f); // Yellow
+//	glVertex3f(east, north, top); // Top right
+//	// South
+//	glColor3f(1.0f, 0.0f, 0.0f); // Red
+//	glVertex3f(west, south, top); // Top left
+//	glColor3f(0.0f, 1.0f, 0.0f); // Green
+//	glVertex3f(west, south, bottom); // Bottom left
+//	glColor3f(0.0f, 0.0f, 1.0f); // Blue
+//	glVertex3f(east, south, bottom); // Bottom right
+//
+//	glColor3f(1.0f, 0.0f, 0.0f); // Red
+//	glVertex3f(west, south, top); // Top left
+//	glColor3f(0.0f, 0.0f, 1.0f); // Blue
+//	glVertex3f(east, south, bottom); // Bottom right
+//	glColor3f(1.0f, 1.0f, 0.0f); // Yellow
+//	glVertex3f(east, south, top); // Top right
+//	// West
+//	glColor3f(1.0f, 0.0f, 0.0f); // Red
+//	glVertex3f(west, north, top); // Top left
+//	glColor3f(0.0f, 1.0f, 0.0f); // Green
+//	glVertex3f(west, north, bottom); // Bottom left
+//	glColor3f(0.0f, 0.0f, 1.0f); // Blue
+//	glVertex3f(west, south, bottom); // Bottom right
+//
+//	glColor3f(1.0f, 0.0f, 0.0f); // Red
+//	glVertex3f(west, north, top); // Top left
+//	glColor3f(0.0f, 0.0f, 1.0f); // Blue
+//	glVertex3f(west, south, bottom); // Bottom right
+//	glColor3f(1.0f, 1.0f, 0.0f); // Yellow
+//	glVertex3f(west, south, top); // Top right
+//	// Top
+//	glColor3f(1.0f, 0.0f, 0.0f); // Red
+//	glVertex3f(west, north, top); // Top left
+//	glColor3f(0.0f, 1.0f, 0.0f); // Green
+//	glVertex3f(west, south, top); // Bottom left
+//	glColor3f(0.0f, 0.0f, 1.0f); // Blue
+//	glVertex3f(east, south, top); // Bottom right
+//
+//	glColor3f(1.0f, 0.0f, 0.0f); // Red
+//	glVertex3f(west, north, top); // Top left
+//	glColor3f(0.0f, 0.0f, 1.0f); // Blue
+//	glVertex3f(east, south, top); // Bottom right
+//	glColor3f(1.0f, 1.0f, 0.0f); // Yellow
+//	glVertex3f(east, north, top); // Top right
+//	// Bottom
+//	glColor3f(1.0f, 0.0f, 0.0f); // Red
+//	glVertex3f(west, north, bottom); // Top left
+//	glColor3f(0.0f, 1.0f, 0.0f); // Green
+//	glVertex3f(west, south, bottom); // Bottom left
+//	glColor3f(0.0f, 0.0f, 1.0f); // Blue
+//	glVertex3f(east, south, bottom); // Bottom right
+//
+//	glColor3f(1.0f, 0.0f, 0.0f); // Red
+//	glVertex3f(west, north, bottom); // Top left
+//	glColor3f(0.0f, 0.0f, 1.0f); // Blue
+//	glVertex3f(east, south, bottom); // Bottom right
+//	glColor3f(1.0f, 1.0f, 0.0f); // Yellow
+//	glVertex3f(east, north, bottom); // Top right
+//}
 
 static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -136,6 +155,7 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 			UINT width = classExtraData->windowWidth;
 			UINT height = classExtraData->windowHeight;
 			PAINTSTRUCT paintStruct;
+			int x;
 
 			glViewport(0, 0, width, height);
 			glEnable(GL_DEPTH_TEST);
@@ -148,8 +168,37 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 			glClear(GL_COLOR_BUFFER_BIT);
 			glBegin(GL_TRIANGLES);
 
-			drawCube(0, 0, 0);
-			drawCube(0, 3, 0);
+			//drawCube(0, 0, 0);
+			//drawCube(0, 3, 0);
+			for (x = 0; x < 16; x++)
+			{
+				int y;
+				for (y = 0; y < 16; y++)
+				{
+					BYTE tile = ROOM[x][y];
+					if (!tile) continue;
+
+					{
+						float north = y + 0.5;
+						float east = x + 0.5;
+						float south = y - 0.5;
+						float west = x - 0.5;
+						float bottom = -0.5;
+						glColor3f(1.0f, 0.0f, 0.0f); // Red
+						glVertex3f(west, north, bottom); // Top left
+						glColor3f(0.0f, 1.0f, 0.0f); // Green
+						glVertex3f(west, south, bottom); // Bottom left
+						glColor3f(0.0f, 0.0f, 1.0f); // Blue
+						glVertex3f(east, south, bottom); // Bottom right
+						glColor3f(1.0f, 0.0f, 0.0f); // Red
+						glVertex3f(west, north, bottom); // Top left
+						glColor3f(0.0f, 0.0f, 1.0f); // Blue
+						glVertex3f(east, south, bottom); // Bottom right
+						glColor3f(1.0f, 1.0f, 0.0f); // Yellow
+						glVertex3f(east, north, bottom); // Top right
+					}
+				}
+			}
 
 			glEnd();
 			glFlush();
@@ -210,6 +259,7 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 				SWP_HIDEWINDOW
 			);
 			ShowWindow(window, classExtraData->windowShowStateBeforeFullscreen);
+			break;
 		case VK_ESCAPE:
 			DestroyWindow(window);
 			PostQuitMessage(0);

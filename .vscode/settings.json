@@ -1,8 +1,0 @@
-{
-	"files.associations": {
-		"*.asm": "dasm",
-		"gl.h": "c",
-		"GL.H": "cpp",
-		"windows.h": "c"
-	}
-}
