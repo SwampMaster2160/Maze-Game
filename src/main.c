@@ -1,14 +1,14 @@
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "gdi32.lib")
 #pragma comment(lib, "opengl32.lib")
-#pragma comment(lib, "src/opengl32.lib")
+//#pragma comment(lib, "src/opengl32.lib")
 #pragma comment(lib, "glu32.lib")
 #include <math.h>
 #include <windows.h>
 #include <gl/GL.h>
 #include <gl/GLU.h>
-WINGDIAPI void glGenTextures(GLsizei n, GLuint *textures);
-WINGDIAPI void glBindTexture(GLenum target, GLuint texture);
+//WINGDIAPI void glGenTextures(GLsizei n, GLuint *textures);
+//void glBindTexture(GLenum target, GLuint texture);
 
 // Based on https://github.com/vbsw/opengl-win32-example/blob/master/Main.cpp
 // For Microsoft Visual C++ 4.0 for Windows versions 95 - 11
@@ -170,9 +170,11 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 			PAINTSTRUCT paintStruct;
 			int x;
 
-			glBindTexture(GL_TEXTURE_2D, classExtraData->texture);
+			//glBindTexture(GL_TEXTURE_2D, classExtraData->texture);
+			//glBindTexture(GL_TEXTURE_2D, 0);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			//glBindTexture(GL_TEXTURE_2D, 0);
 			//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, classExtraData->bitmap.bmWidth, classExtraData->bitmap.bmHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, classExtraData->bitmap.bmBits);
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 4, 4, 0, GL_RGB, GL_UNSIGNED_BYTE, BITS);
 
@@ -408,12 +410,12 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 		//}
 		//glTexImage2D
 		//glTexImage2D
-		glGenTextures(1, &classExtraData.texture);
-		if (classExtraData.texture == 0)
-		{
-			MessageBoxA(NULL, "glGenTextures failed", "Error", MB_OK);
-			return 0;
-		}
+		//glGenTextures(1, &classExtraData.texture);
+		//if (classExtraData.texture == 0)
+		//{
+		//	MessageBoxA(NULL, "glGenTextures failed", "Error", MB_OK);
+		//	return 0;
+		//}
 		//glBindTexture(GL_TEXTURE_2D, tex);
 		//classExtraData.tex = tex;
 		//if (((BYTE *)bitmap.bmBits)[0] != 85) {
