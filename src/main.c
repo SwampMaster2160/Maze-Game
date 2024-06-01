@@ -34,23 +34,58 @@ const float PI = 3.14159265358979323846;
 const DWORD WINDOW_STYLE_WINDOWED = WS_OVERLAPPEDWINDOW;
 const DWORD WINDOW_STYLE_FULLSCREEN = WS_VISIBLE;
 
+enum _TEXTURES
+{
+	TEXTURE_TEST,
+	TEXTURE_WOOD_PLANKS,
+	TEXTURE_STONE_BRICKS,
+};
+
+enum _TILES
+{
+	TILE_NULL,
+	TILE_TEST,
+	TILE_STONE_BRICK_WALL,
+	TILE_WOOD_PLANKS,
+	TILE_COUNT,
+};
+
+enum _TILE_INFO_FLAGS
+{
+	TILE_INFO_FLAGS_WALL = 1,
+};
+
+typedef struct _TILE_INFO
+{
+	BYTE texture;
+	BYTE flags;
+} TILE_INFO;
+
+const TILE_INFO TILE_INFOS[TILE_COUNT] =
+{
+	{0, 0},
+	{TEXTURE_TEST, 0},
+	{TEXTURE_STONE_BRICKS, TILE_INFO_FLAGS_WALL},
+	{TEXTURE_WOOD_PLANKS, 0},
+};
+
 const BYTE ROOM[16][16] = {
-	{1, 2, 3, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	{0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-	{0x10, 0xF1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0xF2, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{TILE_TEST,             TILE_STONE_BRICK_WALL, TILE_NULL,             TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL},
+	{TILE_STONE_BRICK_WALL, TILE_WOOD_PLANKS,      TILE_STONE_BRICK_WALL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL},
+	{TILE_STONE_BRICK_WALL, TILE_WOOD_PLANKS,      TILE_STONE_BRICK_WALL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL},
+	{TILE_NULL,             TILE_STONE_BRICK_WALL, TILE_NULL,             TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL},
+	{TILE_NULL,             TILE_NULL,             TILE_NULL,             TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL},
+	{TILE_NULL,             TILE_NULL,             TILE_NULL,             TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL},
+	{TILE_NULL,             TILE_NULL,             TILE_NULL,             TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL},
+	{TILE_NULL,             TILE_NULL,             TILE_NULL,             TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL},
+	{TILE_NULL,             TILE_NULL,             TILE_NULL,             TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL},
+	{TILE_NULL,             TILE_NULL,             TILE_NULL,             TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL},
+	{TILE_NULL,             TILE_NULL,             TILE_NULL,             TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL},
+	{TILE_NULL,             TILE_NULL,             TILE_NULL,             TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL},
+	{TILE_NULL,             TILE_NULL,             TILE_NULL,             TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL},
+	{TILE_NULL,             TILE_NULL,             TILE_NULL,             TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL},
+	{TILE_NULL,             TILE_NULL,             TILE_NULL,             TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL},
+	{TILE_NULL,             TILE_NULL,             TILE_NULL,             TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL, TILE_NULL},
 };
 
 //void drawCube(float x, float y, float z) {
@@ -145,14 +180,6 @@ const BYTE ROOM[16][16] = {
 //	glColor3f(1.0f, 1.0f, 0.0f); // Yellow
 //	glVertex3f(east, north, bottom); // Top right
 //}
-const BYTE BITS[52] =
-{
-	255, 0, 0, 0, 255, 0, 255, 255, 255, 255, 255, 255,
-	0, 0, 255, 255, 255, 0, 255, 255, 255, 255, 255, 255,
-	255, 0, 0, 127, 0, 0, 0, 255, 0, 0, 255, 0,
-	127, 0, 0, 255, 0, 0, 0, 255, 0, 0, 255, 0,
-};
-//const BYTE BITS2[16] = {255, 0, 0, 127, 127, 127, 0, 0, 190, 190, 190, 255, 127, 255, 0};
 
 static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -169,68 +196,183 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 			UINT width = classExtraData->windowWidth;
 			UINT height = classExtraData->windowHeight;
 			PAINTSTRUCT paintStruct;
-			int x;
-
-			//glBindTexture(GL_TEXTURE_2D, classExtraData->texture);
-			//glBindTexture(GL_TEXTURE_2D, 0);
+			int y;
+			// Filter mode	
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			//glBindTexture(GL_TEXTURE_2D, 0);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 256, 256, 0, GL_RGB, GL_UNSIGNED_BYTE, classExtraData->textures);
-			//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 4, 4, 0, GL_RGB, GL_UNSIGNED_BYTE, BITS);
-			//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, classExtraData->bitmap.bmWidth, classExtraData->bitmap.bmHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, classExtraData->bitmap.bmBits);
-
-			glViewport(0, 0, width, height);
+			// Other
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_TEXTURE_2D);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			// Camera
 			glMatrixMode(GL_PROJECTION);
 			glLoadIdentity();
+			glViewport(0, 0, width, height);
 			gluPerspective(45, (float)width/(float)height, 0.1, 100);
 			gluLookAt(3 * cos(classExtraData->cameraRotation), 3 * sin(classExtraData->cameraRotation), 2, 0, 0, 0, 0, 0, 1);
-			//gluLookAt(3 * 0, 3 * -1, 2, 0, 0, 0, 0, 0, 1);
-
-			glClear(GL_COLOR_BUFFER_BIT);
+			// Set texture to draw with
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 256, 256, 0, GL_RGB, GL_UNSIGNED_BYTE, classExtraData->textures);
+			// Start
 			glBegin(GL_TRIANGLES);
-
-			for (x = 0; x < 16; x++)
+			// Draw each tile
+			for (y = 0; y < 16; y++)
 			{
-				int y;
-				for (y = 0; y < 16; y++)
+				int x;
+				for (x = 0; x < 16; x++)
 				{
+					// Get tile
 					BYTE tile = ROOM[y][x];
-					if (!tile) continue;
+					BYTE northTile = TILE_NULL;
+					BYTE eastTile = TILE_NULL;
+					BYTE southTile = TILE_NULL;
+					BYTE westTile = TILE_NULL;
+					TILE_INFO *tileInfo = &TILE_INFOS[tile];
+					BYTE texture = tileInfo->texture;
+					BYTE tileFlags = tileInfo->flags;
+					// Do not render null tiles
+					if (tile == TILE_NULL) continue;
+					// Get tiles around tile
+					if (y != 0) northTile = ROOM[y - 1][x];
+					if (x != 0) westTile = ROOM[y][x - 1];
+					if (y != 15) southTile = ROOM[y + 1][x];
+					if (x != 15) eastTile = ROOM[y][x + 1];
 
 					{
+						// Calculate tile positions
 						float north = -y + 0.5;
 						float east = x + 0.5;
 						float south = -y - 0.5;
 						float west = x - 0.5;
+						float top = 0.5;
 						float bottom = -0.5;
-						float textureLeft = (tile - 1) % 16 * (1. / 16.);
+						// Calculate texture positions
+						float textureLeft = texture % 16 * (1. / 16.);
 						float textureRight = textureLeft + (1. / 16.);
-						float textureTop = 1 - ((tile - 1) / 16 * (1. / 16.));
+						float textureTop = 1 - (texture / 16 * (1. / 16.));
 						float textureBottom = textureTop - (1. / 16.);
-						
-						glTexCoord2f(textureLeft, textureTop);
-						glVertex3f(west, north, bottom); // Top left
-						glTexCoord2f(textureLeft, textureBottom);
-						glVertex3f(west, south, bottom); // Bottom left
-						glTexCoord2f(textureRight, textureBottom);
-						glVertex3f(east, south, bottom); // Bottom right
-						glTexCoord2f(textureLeft, textureTop);
-						glVertex3f(west, north, bottom); // Top left
-						glTexCoord2f(textureRight, textureBottom);
-						glVertex3f(east, south, bottom); // Bottom right
-						glTexCoord2f(textureRight, textureTop);
-						glVertex3f(east, north, bottom); // Top right
+						// Get which walls should be drawn
+						BOOL drawNorth = FALSE;
+						BOOL drawEast = FALSE;
+						BOOL drawSouth = FALSE;
+						BOOL drawWest = FALSE;
+						BOOL drawTop = FALSE;
+						BOOL drawBottom = FALSE;
+						if (tileFlags & TILE_INFO_FLAGS_WALL)
+						{
+							drawNorth = northTile != TILE_NULL && (!(TILE_INFOS[northTile].flags & TILE_INFO_FLAGS_WALL));
+							drawEast = eastTile != TILE_NULL && (!(TILE_INFOS[eastTile].flags & TILE_INFO_FLAGS_WALL));
+							drawSouth = southTile != TILE_NULL && (!(TILE_INFOS[southTile].flags & TILE_INFO_FLAGS_WALL));
+							drawWest = westTile != TILE_NULL && (!(TILE_INFOS[westTile].flags & TILE_INFO_FLAGS_WALL));
+						}
+						if (!(tileFlags & TILE_INFO_FLAGS_WALL))
+						{
+							drawTop = TRUE;
+							drawBottom = TRUE;
+						}
+						// Draw sides
+						if (drawTop)
+						{
+							// Top
+							glTexCoord2f(textureLeft, textureTop);
+							glVertex3f(west, north, top); // Top left
+							glTexCoord2f(textureLeft, textureBottom);
+							glVertex3f(west, south, top); // Bottom left
+							glTexCoord2f(textureRight, textureBottom);
+							glVertex3f(east, south, top); // Bottom right
+							glTexCoord2f(textureLeft, textureTop);
+							glVertex3f(west, north, top); // Top left
+							glTexCoord2f(textureRight, textureBottom);
+							glVertex3f(east, south, top); // Bottom right
+							glTexCoord2f(textureRight, textureTop);
+							glVertex3f(east, north, top); // Top right
+						}
+						if (drawBottom)
+						{
+							// Bottom
+							glTexCoord2f(textureLeft, textureTop);
+							glVertex3f(west, north, bottom); // Top left
+							glTexCoord2f(textureLeft, textureBottom);
+							glVertex3f(west, south, bottom); // Bottom left
+							glTexCoord2f(textureRight, textureBottom);
+							glVertex3f(east, south, bottom); // Bottom right
+							glTexCoord2f(textureLeft, textureTop);
+							glVertex3f(west, north, bottom); // Top left
+							glTexCoord2f(textureRight, textureBottom);
+							glVertex3f(east, south, bottom); // Bottom right
+							glTexCoord2f(textureRight, textureTop);
+							glVertex3f(east, north, bottom); // Top right
+						}
+						if (drawNorth)
+						{
+							// North
+							glTexCoord2f(textureLeft, textureTop);
+							glVertex3f(east, north, top); // Top left
+							glTexCoord2f(textureLeft, textureBottom);
+							glVertex3f(east, north, bottom); // Bottom left
+							glTexCoord2f(textureRight, textureBottom);
+							glVertex3f(west, north, bottom); // Bottom right
+							glTexCoord2f(textureLeft, textureTop);
+							glVertex3f(east, north, top); // Top left
+							glTexCoord2f(textureRight, textureBottom);
+							glVertex3f(west, north, bottom); // Bottom right
+							glTexCoord2f(textureRight, textureTop);
+							glVertex3f(west, north, top); // Top right
+						}
+						if (drawEast)
+						{
+							// East
+							glTexCoord2f(textureLeft, textureTop);
+							glVertex3f(east, south, top); // Top left
+							glTexCoord2f(textureLeft, textureBottom);
+							glVertex3f(east, south, bottom); // Bottom left
+							glTexCoord2f(textureRight, textureBottom);
+							glVertex3f(east, north, bottom); // Bottom right
+							glTexCoord2f(textureLeft, textureTop);
+							glVertex3f(east, south, top); // Top left
+							glTexCoord2f(textureRight, textureBottom);
+							glVertex3f(east, north, bottom); // Bottom right
+							glTexCoord2f(textureRight, textureTop);
+							glVertex3f(east, north, top); // Top right
+						}
+						if (drawSouth)
+						{
+							// South
+							glTexCoord2f(textureLeft, textureTop);
+							glVertex3f(west, south, top); // Top left
+							glTexCoord2f(textureLeft, textureBottom);
+							glVertex3f(west, south, bottom); // Bottom left
+							glTexCoord2f(textureRight, textureBottom);
+							glVertex3f(east, south, bottom); // Bottom right
+							glTexCoord2f(textureLeft, textureTop);
+							glVertex3f(west, south, top); // Top left
+							glTexCoord2f(textureRight, textureBottom);
+							glVertex3f(east, south, bottom); // Bottom right
+							glTexCoord2f(textureRight, textureTop);
+							glVertex3f(east, south, top); // Top right
+						}
+						if (drawWest)
+						{
+							// West
+							glTexCoord2f(textureLeft, textureTop);
+							glVertex3f(west, north, top); // Top left
+							glTexCoord2f(textureLeft, textureBottom);
+							glVertex3f(west, north, bottom); // Bottom left
+							glTexCoord2f(textureRight, textureBottom);
+							glVertex3f(west, south, bottom); // Bottom right
+							glTexCoord2f(textureLeft, textureTop);
+							glVertex3f(west, north, top); // Top left
+							glTexCoord2f(textureRight, textureBottom);
+							glVertex3f(west, south, bottom); // Bottom right
+							glTexCoord2f(textureRight, textureTop);
+							glVertex3f(west, south, top); // Top right
+						}
 					}
 				}
 			}
-
+			// End
 			glEnd();
 			glFlush();
-
+			// Swap buffers
 			BeginPaint(window, &paintStruct);
 			SwapBuffers(paintStruct.hdc);
 			EndPaint(window, &paintStruct);
@@ -362,9 +504,9 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 		pixelFormatData.nVersion = 1;
 		pixelFormatData.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
 		pixelFormatData.iPixelType = PFD_TYPE_RGBA; //PFD_TYPE_COLORINDEX;
-		pixelFormatData.cColorBits = 32;
+		pixelFormatData.cColorBits = 24;
 		pixelFormatData.cDepthBits = 24;
-		pixelFormatData.cAlphaBits = 8;
+		pixelFormatData.cAlphaBits = 0;
 		pixelFormat = ChoosePixelFormat(windowDeviceContext, &pixelFormatData);
 		if (pixelFormat == 0)
 		{
@@ -391,20 +533,20 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 		MessageBoxA(NULL, "wglMakeCurrent failed", "Error", MB_OK);
 		return 0;
 	}
-	//
-	//OutputDebugStringA("A");
+	// Allocate memory for texture sheet
 	classExtraData.textures = malloc(256 * 256 * 3 * sizeof(BYTE));
 	if (classExtraData.textures == NULL)
 	{
 		MessageBoxA(NULL, "malloc failed", "Error", MB_OK);
 		return 0;
 	}
+	// Load texture sheet from bitmap resource
 	{
-		HBITMAP hBitmap = LoadImageA(instance, "TEXTURES", IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_DEFAULTSIZE);//LoadBitmapA(instance, "TEXTURES");
-		char string[100];
+		HBITMAP hBitmap;
 		BITMAP bitmap;
-		DWORD x;
-		//GLuint tex[2];
+		DWORD y;
+		// Load bitmap resource
+		hBitmap = LoadImageA(instance, "TEXTURES", IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_DEFAULTSIZE);
 		if (hBitmap == NULL)
 		{
 			MessageBoxA(NULL, "LoadBitmapA failed", "Error", MB_OK);
@@ -416,16 +558,17 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 			MessageBoxA(NULL, "GetObjectA failed", "Error", MB_OK);
 			return 0;
 		}
-		if (bitmap.bmWidth != 256 || bitmap.bmHeight != 256 || bitmap.bmBitsPixel != 24 ||
-		bitmap.bmPlanes != 1 || bitmap.bmType != 0 || bitmap.bmBits == NULL)
+		// Check that the bitmap has the right properties
+		if (bitmap.bmWidth != 256 || bitmap.bmHeight != 256 || bitmap.bmBitsPixel != 24 || bitmap.bmPlanes != 1 || bitmap.bmType != 0 || bitmap.bmBits == NULL)
 		{
 			MessageBoxA(NULL, "Bad image format", "Error", MB_OK);
 			return 0;
 		}
-		for (x = 0; x < 256; x++)
+		// Copy the pixels from the bitmap to the texture sheet
+		for (y = 0; y < 256; y++)
 		{
-			DWORD y;
-			for (y = 0; y < 256; y++)
+			DWORD x;
+			for (x = 0; x < 256; x++)
 			{
 				DWORD outputPixelIndex = (x + y * 256) * 3;
 				DWORD inputX = x;
@@ -436,33 +579,15 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 				classExtraData.textures[outputPixelIndex + 2] = ((BYTE *)bitmap.bmBits)[inputPixelIndex];
 			}
 		}
-		//classExtraData.textures[0] = 255;
-		//strcpy(string, "Hi");
-		//sprintf(string, "%hhu", ((BYTE *)bitmap.bmBits)[1]);
-		//MessageBoxA(NULL, string, "Info", MB_OK);
-		//if (((BYTE *)classExtraData.bitmap.bmBits)[0] != 0)
-		//{
-		//	MessageBoxA(NULL, "B failed", "Error", MB_OK);
-		//	return 0;
-		//}
-		//glTexImage2D
-		//glTexImage2D
-		//glGenTextures(1, &classExtraData.texture);
-		//if (classExtraData.texture == 0)
-		//{
-		//	MessageBoxA(NULL, "glGenTextures failed", "Error", MB_OK);
-		//	return 0;
-		//}
-		//glBindTexture(GL_TEXTURE_2D, tex);
-		//classExtraData.tex = tex;
-		//if (((BYTE *)bitmap.bmBits)[0] != 85) {
-		//	MessageBoxA(NULL, "A failed", "Error", MB_OK);
-		//	return 0;
-		//}
-		//glBindTexture(GL_TEXTURE_2D, 0);
-		// Show window
+		// Delete bitmap
+		boolResult = DeleteObject(hBitmap);
+		if (!boolResult)
+		{
+			MessageBoxA(NULL, "DeleteObject failed", "Error", MB_OK);
+			return 0;
+		}
 	}
-	//printf("a");
+	// Show window
 	ShowWindow(window, iCmdShow);
 	UpdateWindow(window);
 	// Message loop
