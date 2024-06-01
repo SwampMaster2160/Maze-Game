@@ -4,6 +4,7 @@
 //#pragma comment(lib, "src/opengl32.lib")
 #pragma comment(lib, "glu32.lib")
 #include <math.h>
+#include <stdio.h>
 #include <windows.h>
 #include <gl/GL.h>
 #include <gl/GLU.h>
@@ -26,7 +27,7 @@ typedef struct tagClassExtraData
 	DWORD lastTime;
 	BOOL isFullscreen;
 	GLuint texture;
-	//BITMAP bitmap;
+	BYTE *textures;
 } ClassExtraData;
 
 const float PI = 3.14159265358979323846;
@@ -36,8 +37,8 @@ const DWORD WINDOW_STYLE_FULLSCREEN = WS_VISIBLE;
 const BYTE ROOM[16][16] = {
 	{1, 2, 3, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
 	{0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-	{0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0x10, 0xF1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0xF2, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	{0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	{0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -175,8 +176,9 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			//glBindTexture(GL_TEXTURE_2D, 0);
-			//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, classExtraData->bitmap.bmWidth, classExtraData->bitmap.bmHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, classExtraData->bitmap.bmBits);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 4, 4, 0, GL_RGB, GL_UNSIGNED_BYTE, BITS);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 256, 256, 0, GL_RGB, GL_UNSIGNED_BYTE, classExtraData->textures);
+			//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 4, 4, 0, GL_RGB, GL_UNSIGNED_BYTE, BITS);
+			//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, classExtraData->bitmap.bmWidth, classExtraData->bitmap.bmHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, classExtraData->bitmap.bmBits);
 
 			glViewport(0, 0, width, height);
 			glEnable(GL_DEPTH_TEST);
@@ -186,6 +188,7 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 			glLoadIdentity();
 			gluPerspective(45, (float)width/(float)height, 0.1, 100);
 			gluLookAt(3 * cos(classExtraData->cameraRotation), 3 * sin(classExtraData->cameraRotation), 2, 0, 0, 0, 0, 0, 1);
+			//gluLookAt(3 * 0, 3 * -1, 2, 0, 0, 0, 0, 0, 1);
 
 			glClear(GL_COLOR_BUFFER_BIT);
 			glBegin(GL_TRIANGLES);
@@ -195,19 +198,19 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 				int y;
 				for (y = 0; y < 16; y++)
 				{
-					BYTE tile = ROOM[x][y];
+					BYTE tile = ROOM[y][x];
 					if (!tile) continue;
 
 					{
-						float north = y + 0.5;
+						float north = -y + 0.5;
 						float east = x + 0.5;
-						float south = y - 0.5;
+						float south = -y - 0.5;
 						float west = x - 0.5;
 						float bottom = -0.5;
-						float textureLeft = (tile + 1) % 2 * 0.5;
-						float textureRight = textureLeft + 0.5;
-						float textureTop = 1 - ((tile + 1) / 2 * 0.5);
-						float textureBottom = textureTop - 0.5;
+						float textureLeft = (tile - 1) % 16 * (1. / 16.);
+						float textureRight = textureLeft + (1. / 16.);
+						float textureTop = 1 - ((tile - 1) / 16 * (1. / 16.));
+						float textureBottom = textureTop - (1. / 16.);
 						
 						glTexCoord2f(textureLeft, textureTop);
 						glVertex3f(west, north, bottom); // Top left
@@ -388,24 +391,58 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 		MessageBoxA(NULL, "wglMakeCurrent failed", "Error", MB_OK);
 		return 0;
 	}
-	// Show window
-	ShowWindow(window, iCmdShow);
-	UpdateWindow(window);
 	//
-	OutputDebugStringA("A");
+	//OutputDebugStringA("A");
+	classExtraData.textures = malloc(256 * 256 * 3 * sizeof(BYTE));
+	if (classExtraData.textures == NULL)
 	{
-		//HBITMAP hBitmap = LoadBitmapA(instance, "TEST");
-		////BITMAP bitmap;
+		MessageBoxA(NULL, "malloc failed", "Error", MB_OK);
+		return 0;
+	}
+	{
+		HBITMAP hBitmap = LoadImageA(instance, "TEXTURES", IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_DEFAULTSIZE);//LoadBitmapA(instance, "TEXTURES");
+		char string[100];
+		BITMAP bitmap;
+		DWORD x;
 		//GLuint tex[2];
-		//if (hBitmap == NULL)
+		if (hBitmap == NULL)
+		{
+			MessageBoxA(NULL, "LoadBitmapA failed", "Error", MB_OK);
+			return 0;
+		}
+		intResult = GetObjectA(hBitmap, sizeof(BITMAP), &bitmap);
+		if (intResult == 0)
+		{
+			MessageBoxA(NULL, "GetObjectA failed", "Error", MB_OK);
+			return 0;
+		}
+		if (bitmap.bmWidth != 256 || bitmap.bmHeight != 256 || bitmap.bmBitsPixel != 24 ||
+		bitmap.bmPlanes != 1 || bitmap.bmType != 0 || bitmap.bmBits == NULL)
+		{
+			MessageBoxA(NULL, "Bad image format", "Error", MB_OK);
+			return 0;
+		}
+		for (x = 0; x < 256; x++)
+		{
+			DWORD y;
+			for (y = 0; y < 256; y++)
+			{
+				DWORD outputPixelIndex = (x + y * 256) * 3;
+				DWORD inputX = x;
+				DWORD inputY = y;
+				DWORD inputPixelIndex = (inputX + inputY * 256) * 3;
+				classExtraData.textures[outputPixelIndex] = ((BYTE *)bitmap.bmBits)[inputPixelIndex + 2];
+				classExtraData.textures[outputPixelIndex + 1] = ((BYTE *)bitmap.bmBits)[inputPixelIndex + 1];
+				classExtraData.textures[outputPixelIndex + 2] = ((BYTE *)bitmap.bmBits)[inputPixelIndex];
+			}
+		}
+		//classExtraData.textures[0] = 255;
+		//strcpy(string, "Hi");
+		//sprintf(string, "%hhu", ((BYTE *)bitmap.bmBits)[1]);
+		//MessageBoxA(NULL, string, "Info", MB_OK);
+		//if (((BYTE *)classExtraData.bitmap.bmBits)[0] != 0)
 		//{
-		//	MessageBoxA(NULL, "LoadBitmapA failed", "Error", MB_OK);
-		//	return 0;
-		//}
-		//intResult = GetObjectA(hBitmap, sizeof(BITMAP), &classExtraData.bitmap);
-		//if (intResult == 0)
-		//{
-		//	MessageBoxA(NULL, "GetObjectA failed", "Error", MB_OK);
+		//	MessageBoxA(NULL, "B failed", "Error", MB_OK);
 		//	return 0;
 		//}
 		//glTexImage2D
@@ -423,7 +460,11 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 		//	return 0;
 		//}
 		//glBindTexture(GL_TEXTURE_2D, 0);
+		// Show window
 	}
+	//printf("a");
+	ShowWindow(window, iCmdShow);
+	UpdateWindow(window);
 	// Message loop
 	while (TRUE)
 	{
@@ -442,4 +483,5 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 	// Cleanup
 	wglMakeCurrent(NULL, NULL);
 	KillTimer(window, timer);
+	free(classExtraData.textures);
 }
