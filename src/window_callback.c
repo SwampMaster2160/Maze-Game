@@ -2,7 +2,7 @@
 
 #include "main.h"
 
-static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	ClassExtraData *classExtraData;
 	classExtraData = (ClassExtraData *)GetClassLong(window, 0);
@@ -42,14 +42,14 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 				for (x = 0; x < 16; x++)
 				{
 					// Get tile
-					BYTE tile = ROOM[y][x];
-					BYTE northTile = TILE_NULL;
-					BYTE eastTile = TILE_NULL;
-					BYTE southTile = TILE_NULL;
-					BYTE westTile = TILE_NULL;
-					TILE_INFO *tileInfo = &TILE_INFOS[tile];
-					BYTE texture = tileInfo->texture;
-					BYTE tileFlags = tileInfo->flags;
+					TILE tile = ROOM[y][x];
+					TILE northTile = TILE_NULL;
+					TILE eastTile = TILE_NULL;
+					TILE southTile = TILE_NULL;
+					TILE westTile = TILE_NULL;
+					TILE_INFO tileInfo = TILE_INFOS[tile];
+					TEXTURE texture = tileInfo.texture;
+					BYTE tileFlags = tileInfo.flags;
 					// Do not render null tiles
 					if (tile == TILE_NULL) continue;
 					// Get tiles around tile
@@ -212,7 +212,7 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 			DWORD time = GetTickCount();
 			DWORD deltaTime = time - classExtraData->lastTime;
 			if (deltaTime < 10) break;
-			classExtraData->cameraRotation += (float)deltaTime / 1000 / 1;
+			//classExtraData->cameraRotation += (float)deltaTime / 1000 / 1;
 			RedrawWindow(window, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
 			classExtraData->lastTime = time;
 			break;
@@ -252,10 +252,42 @@ static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, 
 			ShowWindow(window, classExtraData->windowShowStateBeforeFullscreen);
 			break;
 		case VK_ESCAPE:
-			DestroyWindow(window);
-			PostQuitMessage(0);
+			SetFocus(NULL);
 			break;
 		}
+	case WM_MOUSEMOVE:
+		{
+			RECT windowRect;
+			BOOL result = GetWindowRect(window, &windowRect);
+			SHORT x = (SHORT)LOWORD(lParam);
+			SHORT centerX = windowRect.left + classExtraData->windowWidth / 2;
+			SHORT lastCursorX = classExtraData->cursorX;
+			classExtraData->cursorX = x;
+			if (!result) break;
+			if (classExtraData->didSetCursorPosLast)
+			{
+				classExtraData->didSetCursorPosLast = FALSE;
+				break;
+			}
+			if (!classExtraData->hasFocus) break;
+			SetCursorPos(centerX, windowRect.top + classExtraData->windowHeight / 2);
+			classExtraData->cameraRotation -= 0.02 * (x - lastCursorX);
+			if (classExtraData->cameraRotation < 0) classExtraData->cameraRotation += 2 * PI;
+			if (classExtraData->cameraRotation > 2 * PI) classExtraData->cameraRotation -= 2 * PI;
+			classExtraData->didSetCursorPosLast = TRUE;
+			break;
+		}
+	case WM_LBUTTONDOWN:
+		if (!classExtraData->hasFocus) SetFocus(window);
+		break;
+	case WM_SETFOCUS:
+		classExtraData->hasFocus = TRUE;
+		ShowCursor(FALSE);
+		break;
+	case WM_KILLFOCUS:
+		classExtraData->hasFocus = FALSE;
+		ShowCursor(TRUE);
+		break;
 	default:
 		return DefWindowProc(window, message, wParam, lParam);
 	}

@@ -29,14 +29,14 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 		WNDCLASSA windowClassData;
 		memset(&windowClassData, 0, sizeof(windowClassData));
 		windowClassData.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
-		windowClassData.lpfnWndProc = (WNDPROC)windowProcess;
+		windowClassData.lpfnWndProc = (WNDPROC)WindowProcess;
 		windowClassData.cbClsExtra = sizeof(LONG);
 		windowClassData.hInstance = instance;
-		windowClassData.hIcon = LoadIcon(NULL, IDI_WINLOGO);
+		windowClassData.hIcon = LoadIcon(NULL, IDI_APPLICATION);
 		windowClassData.hCursor = LoadCursor(NULL, IDC_ARROW);
 		windowClassData.hbrBackground = NULL;
 		windowClassData.lpszMenuName = NULL;
-		windowClassData.lpszClassName = "Windows OpenGL";
+		windowClassData.lpszClassName = "Maze Game";
 		windowClass = RegisterClassA(&windowClassData);
 	}
 	if (windowClass == 0)
@@ -45,7 +45,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 		return 0;
 	}
 	// Create window
-	window = CreateWindowA((LPCSTR)windowClass, "Windows OpenGL", WINDOW_STYLE_WINDOWED, 100, 100, 320, 240, NULL, NULL, instance, NULL);
+	window = CreateWindowA((LPCSTR)windowClass, "Maze Game", WINDOW_STYLE_WINDOWED, 100, 100, 320, 240, NULL, NULL, instance, NULL);
 	if (window == NULL)
 	{
 		MessageBoxA(NULL, "CreateWindowA failed", "Error", MB_OK);
@@ -68,6 +68,8 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 	classExtraData.cameraRotation = 0;
 	classExtraData.isFullscreen = FALSE;
 	classExtraData.lastTime = GetTickCount();
+	classExtraData.cursorX = 0;
+	classExtraData.didSetCursorPosLast = FALSE;
 	SetClassLongA(window, 0, (LONG)&classExtraData);
 	// Create render context
 	{
@@ -143,13 +145,10 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 			DWORD x;
 			for (x = 0; x < 256; x++)
 			{
-				DWORD outputPixelIndex = (x + y * 256) * 3;
-				DWORD inputX = x;
-				DWORD inputY = y;
-				DWORD inputPixelIndex = (inputX + inputY * 256) * 3;
-				classExtraData.textures[outputPixelIndex] = ((BYTE *)bitmap.bmBits)[inputPixelIndex + 2];
-				classExtraData.textures[outputPixelIndex + 1] = ((BYTE *)bitmap.bmBits)[inputPixelIndex + 1];
-				classExtraData.textures[outputPixelIndex + 2] = ((BYTE *)bitmap.bmBits)[inputPixelIndex];
+				DWORD pixelIndex = (x + y * 256) * 3;
+				classExtraData.textures[pixelIndex] = ((BYTE *)bitmap.bmBits)[pixelIndex + 2];
+				classExtraData.textures[pixelIndex + 1] = ((BYTE *)bitmap.bmBits)[pixelIndex + 1];
+				classExtraData.textures[pixelIndex + 2] = ((BYTE *)bitmap.bmBits)[pixelIndex];
 			}
 		}
 		// Delete bitmap

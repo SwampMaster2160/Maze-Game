@@ -20,18 +20,23 @@ typedef struct tagClassExtraData
 	BOOL isFullscreen;
 	GLuint texture;
 	BYTE *textures;
+	BOOL hasFocus;
+	SHORT cursorX;
+	BOOL didSetCursorPosLast;
 } ClassExtraData;
 
 /// A list of textures in the texture bitmap.
-enum tagTEXTURES
+enum tagTEXTURE
 {
 	TEXTURE_TEST,
 	TEXTURE_WOOD_PLANKS,
 	TEXTURE_STONE_BRICKS,
 };
+/// A texture ID.
+typedef BYTE TEXTURE;
 
 /// A list of tile IDs.
-enum tagTILES
+enum tagTILE
 {
 	TILE_NULL,
 	TILE_TEST,
@@ -39,6 +44,8 @@ enum tagTILES
 	TILE_WOOD_PLANKS,
 	TILE_COUNT,
 };
+/// A tile ID.
+typedef BYTE TILE;
 
 /// A set of flags for tiles.
 enum tagTILE_FLAGS
@@ -49,7 +56,7 @@ enum tagTILE_FLAGS
 /// The type of each members of the `TILE_INFOS` array.
 typedef struct tagTILE_INFO
 {
-	BYTE texture;
+	TEXTURE texture;
 	BYTE flags;
 } TILE_INFO;
 
@@ -57,6 +64,7 @@ typedef struct tagTILE_INFO
 
 const DWORD WINDOW_STYLE_WINDOWED = WS_OVERLAPPEDWINDOW;
 const DWORD WINDOW_STYLE_FULLSCREEN = WS_VISIBLE;
+const float PI = 3.14159265358979323846;
 
 /// Info about each type tile, a tile ID is the index.
 const TILE_INFO TILE_INFOS[TILE_COUNT];
@@ -64,7 +72,7 @@ const BYTE ROOM[16][16];
 
 // --- Functions ---
 
-static LRESULT CALLBACK windowProcess(HWND window, UINT message, WPARAM wParam, LPARAM lParam);
+static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, LPARAM lParam);
 
 #endif
 #define MAIN_H
