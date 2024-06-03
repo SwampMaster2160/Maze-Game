@@ -3,18 +3,23 @@
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glu32.lib")
 #include <math.h>
-#include <stdio.h>
 
 #include "main.h"
-#include "window_callback.c"
-#include "data.c"
 
 // For Microsoft Visual C++ 4.0 for Windows versions 95 - 11
 
-//const float PI = 3.14159265358979323846;
+#define WINDOW_WIDTH 640
+#define WINDOW_HEIGHT 480
 
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, int iCmdShow)
 {
+	MGERROR result = Main(instance, prevInstance, szCmdLine, iCmdShow);
+	return DisplayError(result);
+}
+
+int Main(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, int iCmdShow)
+{
+	ClassExtraData classExtraData;
 	ATOM windowClass;
 	HWND window;
 	HDC windowDeviceContext;
@@ -22,8 +27,9 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 	BOOL boolResult;
 	int intResult;
 	HGLRC renderContext;
-	ClassExtraData classExtraData;
 	UINT timer;
+	int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
 	// Register window class
 	{
 		WNDCLASSA windowClassData;
@@ -39,31 +45,24 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 		windowClassData.lpszClassName = "Maze Game";
 		windowClass = RegisterClassA(&windowClassData);
 	}
-	if (windowClass == 0)
-	{
-		MessageBoxA(NULL, "RegisterClassA failed", "Error", MB_OK);
-		return 0;
-	}
+	if (windowClass == 0) return MGERROR_REGISTER_CLASS;
 	// Create window
-	window = CreateWindowA((LPCSTR)windowClass, "Maze Game", WINDOW_STYLE_WINDOWED, 100, 100, 320, 240, NULL, NULL, instance, NULL);
-	if (window == NULL)
 	{
-		MessageBoxA(NULL, "CreateWindowA failed", "Error", MB_OK);
-		return 0;
+		int windowWidth = WINDOW_WIDTH;
+		int windowHeight = WINDOW_HEIGHT;
+		if (screenWidth < 800 || screenHeight < 600)
+		{
+			windowWidth /= 2;
+			windowHeight /= 2;
+		}
+		window = CreateWindowA((LPCSTR)windowClass, "Maze Game", WINDOW_STYLE_WINDOWED, (screenWidth - windowWidth) / 2, (screenHeight - windowHeight) / 2, windowWidth, windowHeight, NULL, NULL, instance, NULL);
 	}
+	if (window == NULL) return MGERROR_CREATE_WINDOW;
 	windowDeviceContext = GetDC(window);
-	if (windowDeviceContext == NULL)
-	{
-		MessageBoxA(NULL, "GetDC failed", "Error", MB_OK);
-		return 0;
-	}
+	if (windowDeviceContext == NULL) return MGERROR_GET_WINDOW_DC;
 	// Create timer
 	timer = SetTimer(window, 0, 1000 / 60, NULL);
-	if (timer == 0)
-	{
-		MessageBoxA(NULL, "SetTimer failed", "Error", MB_OK);
-		return 0;
-	}
+	if (timer == 0) return MGERROR_CREATE_TIMER;
 	// Set window extra data
 	classExtraData.cameraRotation = 0;
 	classExtraData.isFullscreen = FALSE;
@@ -83,38 +82,18 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 		pixelFormatData.cDepthBits = 24;
 		pixelFormatData.cAlphaBits = 0;
 		pixelFormat = ChoosePixelFormat(windowDeviceContext, &pixelFormatData);
-		if (pixelFormat == 0)
-		{
-			MessageBoxA(NULL, "ChoosePixelFormat failed", "Error", MB_OK);
-			return 0;
-		}
+		if (pixelFormat == 0) return MGERROR_CREATE_PIXEL_FROMAT;
 		boolResult = SetPixelFormat(windowDeviceContext, pixelFormat, &pixelFormatData);
 	}
-	if (!boolResult)
-	{
-		MessageBoxA(NULL, "SetPixelFormat failed", "Error", MB_OK);
-		return 0;
-	}
+	if (!boolResult) return MGERROR_SET_PIXEL_FROMAT;
 	renderContext = wglCreateContext(windowDeviceContext);
-	if (renderContext == NULL)
-	{
-		MessageBoxA(NULL, "wglCreateContext failed", "Error", MB_OK);
-		return 0;
-	}
+	if (renderContext == NULL) return MGERROR_CREATE_OPENGL_RENDER_CONTEXT;
 	// Set render context
 	boolResult = wglMakeCurrent(windowDeviceContext, renderContext);
-	if (!boolResult)
-	{
-		MessageBoxA(NULL, "wglMakeCurrent failed", "Error", MB_OK);
-		return 0;
-	}
+	if (!boolResult) return MGERROR_MAKE_OPENGL_RENDER_CONTEXT_CURRENT;
 	// Allocate memory for texture sheet
 	classExtraData.textures = malloc(256 * 256 * 3 * sizeof(BYTE));
-	if (classExtraData.textures == NULL)
-	{
-		MessageBoxA(NULL, "malloc failed", "Error", MB_OK);
-		return 0;
-	}
+	if (classExtraData.textures == NULL) return MGERROR_ALLOCATE_MEMORY_FOR_TEXTURES;
 	// Load texture sheet from bitmap resource
 	{
 		HBITMAP hBitmap;
@@ -122,23 +101,12 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 		DWORD y;
 		// Load bitmap resource
 		hBitmap = LoadImageA(instance, "TEXTURES", IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_DEFAULTSIZE);
-		if (hBitmap == NULL)
-		{
-			MessageBoxA(NULL, "LoadBitmapA failed", "Error", MB_OK);
-			return 0;
-		}
+		if (hBitmap == NULL) return MGERROR_GET_TEXTURES_BITMAP_RESOURCE;
 		intResult = GetObjectA(hBitmap, sizeof(BITMAP), &bitmap);
-		if (intResult == 0)
-		{
-			MessageBoxA(NULL, "GetObjectA failed", "Error", MB_OK);
-			return 0;
-		}
+		if (intResult == 0) return MGERROR_LOAD_TEXTURES_BITMAP_RESOURCE;
 		// Check that the bitmap has the right properties
 		if (bitmap.bmWidth != 256 || bitmap.bmHeight != 256 || bitmap.bmBitsPixel != 24 || bitmap.bmPlanes != 1 || bitmap.bmType != 0 || bitmap.bmBits == NULL)
-		{
-			MessageBoxA(NULL, "Bad image format", "Error", MB_OK);
-			return 0;
-		}
+			return MGERROR_TEXTURES_BITMAP_RESOURCE_BAD_IMAGE_FROMAT;
 		// Copy the pixels from the bitmap to the texture sheet
 		for (y = 0; y < 256; y++)
 		{
@@ -153,11 +121,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 		}
 		// Delete bitmap
 		boolResult = DeleteObject(hBitmap);
-		if (!boolResult)
-		{
-			MessageBoxA(NULL, "DeleteObject failed", "Error", MB_OK);
-			return 0;
-		}
+		if (!boolResult) return MGERROR_TEXTURES_BITMAP_RESOURCE_DELETE;
 	}
 	// Show window
 	ShowWindow(window, iCmdShow);
@@ -169,11 +133,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 		BOOL result;
 		result = GetMessageA(&windowMessage, NULL, 0, 0);
 		if (result == 0) break;
-		if (result == -1)
-		{
-			MessageBoxA(NULL, "GetMessageA failed", "Error", MB_OK);
-			return 0;
-		}
+		if (result == -1) return MGERROR_GET_MESSAGE;
 		TranslateMessage(&windowMessage);
 		DispatchMessageA(&windowMessage);
 	}
@@ -181,4 +141,10 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, i
 	wglMakeCurrent(NULL, NULL);
 	KillTimer(window, timer);
 	free(classExtraData.textures);
+
+	return MGERROR_NONE;
 }
+
+#include "window_callback.c"
+#include "data.c"
+#include "error.c"
