@@ -61,14 +61,22 @@ int Main(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, int iCmdSho
 	windowDeviceContext = GetDC(window);
 	if (windowDeviceContext == NULL) return MGERROR_GET_WINDOW_DC;
 	// Create timer
-	timer = SetTimer(window, 0, 1000 / 60, NULL);
+	timer = SetTimer(window, RENDER_TIMER, 1000 / FPS, NULL);
+	if (timer == 0) return MGERROR_CREATE_TIMER;
+	timer = SetTimer(window, TICK_TIMER, 1000 / TPS, NULL);
 	if (timer == 0) return MGERROR_CREATE_TIMER;
 	// Set window extra data
-	classExtraData.cameraRotation = 0;
+	classExtraData.cameraRotation = PI * 1.5;
+	classExtraData.playerX = 1;
+	classExtraData.playerY = -1;
 	classExtraData.isFullscreen = FALSE;
 	classExtraData.lastTime = GetTickCount();
 	classExtraData.cursorX = 0;
 	classExtraData.didSetCursorPosLast = FALSE;
+	classExtraData.upPressed = FALSE;
+	classExtraData.downPressed = FALSE;
+	classExtraData.leftPressed = FALSE;
+	classExtraData.rightPressed = FALSE;
 	SetClassLongA(window, 0, (LONG)&classExtraData);
 	// Create render context
 	{

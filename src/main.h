@@ -16,6 +16,8 @@ typedef struct tagClassExtraData
 	SHORT windowYBeforeFullscreen;
 	int windowShowStateBeforeFullscreen;
 	float cameraRotation;
+	float playerX;
+	float playerY;
 	DWORD lastTime;
 	BOOL isFullscreen;
 	GLuint texture;
@@ -23,6 +25,10 @@ typedef struct tagClassExtraData
 	BOOL hasFocus;
 	SHORT cursorX;
 	BOOL didSetCursorPosLast;
+	BOOL upPressed;
+	BOOL downPressed;
+	BOOL leftPressed;
+	BOOL rightPressed;
 } ClassExtraData;
 
 /// A list of textures in the texture bitmap.
@@ -86,6 +92,12 @@ typedef int MGERROR;
 #define WINDOW_STYLE_WINDOWED WS_OVERLAPPEDWINDOW
 #define WINDOW_STYLE_FULLSCREEN WS_VISIBLE
 #define PI 3.14159265358979323846
+#define FPS 60
+#define TPS 100
+#define RENDER_TIMER 1
+#define TICK_TIMER 2
+#define MOVEMENT_SPEED 0.015
+#define CAMERA_MOVEMENT_SPEED (2 * PI * 0.002)
 
 // --- Tables ---
 

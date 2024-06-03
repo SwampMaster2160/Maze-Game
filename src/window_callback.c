@@ -1,4 +1,5 @@
 #include <gl/GL.h>
+#include <math.h>
 
 #include "main.h"
 
@@ -24,13 +25,13 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 			// Other
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_TEXTURE_2D);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glClear(GL_DEPTH_BUFFER_BIT);
 			// Camera
 			glMatrixMode(GL_PROJECTION);
 			glLoadIdentity();
 			glViewport(0, 0, width, height);
-			gluPerspective(45, (float)width/(float)height, 0.1, 100);
-			gluLookAt(3 * cos(classExtraData->cameraRotation), 3 * sin(classExtraData->cameraRotation), 2, 0, 0, 0, 0, 0, 1);
+			gluPerspective(90, (float)width/(float)height, 0.01, 100);
+			gluLookAt(classExtraData->playerX, classExtraData->playerY, 0, classExtraData->playerX + cos(classExtraData->cameraRotation), classExtraData->playerY + sin(classExtraData->cameraRotation), 0, 0, 0, 1);
 			// Set texture to draw with
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 256, 256, 0, GL_RGB, GL_UNSIGNED_BYTE, classExtraData->textures);
 			// Start
@@ -208,15 +209,79 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 		classExtraData->windowHeight = HIWORD(lParam);
 		break;
 	case WM_TIMER:
+		switch (wParam) {
+		case RENDER_TIMER:
+			{
+				DWORD time = GetTickCount();
+				DWORD deltaTime = time - classExtraData->lastTime;
+				if (deltaTime < 10) break;
+				//classExtraData->cameraRotation += (float)deltaTime / 1000 / 1;
+				RedrawWindow(window, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
+				classExtraData->lastTime = time;
+				break;
+			}
+		case TICK_TIMER:
+			{
+				float x = classExtraData->playerX;
+				float y = classExtraData->playerY;
+				int tileX;
+				int tileY;
+				TILE_INFO tileInfo;
+				if (classExtraData->upPressed)
+				{
+					x += cos(classExtraData->cameraRotation) * MOVEMENT_SPEED;
+					y += sin(classExtraData->cameraRotation) * MOVEMENT_SPEED;
+				}
+				if (classExtraData->leftPressed)
+				{
+					x += cos(classExtraData->cameraRotation + PI * 0.5) * MOVEMENT_SPEED;
+					y += sin(classExtraData->cameraRotation + PI * 0.5) * MOVEMENT_SPEED;
+				}
+				if (classExtraData->downPressed)
+				{
+					x += cos(classExtraData->cameraRotation + PI) * MOVEMENT_SPEED;
+					y += sin(classExtraData->cameraRotation + PI) * MOVEMENT_SPEED;
+				}
+				if (classExtraData->rightPressed)
+				{
+					x += cos(classExtraData->cameraRotation + PI * 1.5) * MOVEMENT_SPEED;
+					y += sin(classExtraData->cameraRotation + PI * 1.5) * MOVEMENT_SPEED;
+				}
+				tileX = floor(x + 0.5);
+				tileY = floor(-y + 0.5);
+				tileInfo = TILE_INFOS[ROOM[tileY][tileX]];
+				if (!(tileInfo.flags & TILE_FLAGS_WALL))
+				{
+					classExtraData->playerX = x;
+					classExtraData->playerY = y;
+				}
+				//classExtraData->playerX = x;
+				//classExtraData->playerY = y;
+				break;
+			}
+		}
+		break;
+	case WM_KEYDOWN:
+		switch (wParam)
 		{
-			DWORD time = GetTickCount();
-			DWORD deltaTime = time - classExtraData->lastTime;
-			if (deltaTime < 10) break;
-			//classExtraData->cameraRotation += (float)deltaTime / 1000 / 1;
-			RedrawWindow(window, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
-			classExtraData->lastTime = time;
+		case 0x57: // W
+		case VK_UP:
+			classExtraData->upPressed = TRUE;
+			break;
+		case 0x41: // A
+		case VK_LEFT:
+			classExtraData->leftPressed = TRUE;
+			break;
+		case 0x53: // S
+		case VK_DOWN:
+			classExtraData->downPressed = TRUE;
+			break;
+		case 0x44: // D
+		case VK_RIGHT:
+			classExtraData->rightPressed = TRUE;
 			break;
 		}
+		break;
 	case WM_KEYUP:
 		switch (wParam)
 		{
@@ -254,7 +319,24 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 		case VK_ESCAPE:
 			SetFocus(NULL);
 			break;
+		case 0x57: // W
+		case VK_UP:
+			classExtraData->upPressed = FALSE;
+			break;
+		case 0x41: // A
+		case VK_LEFT:
+			classExtraData->leftPressed = FALSE;
+			break;
+		case 0x53: // S
+		case VK_DOWN:
+			classExtraData->downPressed = FALSE;
+			break;
+		case 0x44: // D
+		case VK_RIGHT:
+			classExtraData->rightPressed = FALSE;
+			break;
 		}
+		break;
 	case WM_MOUSEMOVE:
 		{
 			RECT windowRect;
@@ -271,7 +353,7 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 			}
 			if (!classExtraData->hasFocus) break;
 			SetCursorPos(centerX, windowRect.top + classExtraData->windowHeight / 2);
-			classExtraData->cameraRotation -= 0.02 * (x - lastCursorX);
+			classExtraData->cameraRotation -= CAMERA_MOVEMENT_SPEED * (x - lastCursorX);
 			if (classExtraData->cameraRotation < 0) classExtraData->cameraRotation += 2 * PI;
 			if (classExtraData->cameraRotation > 2 * PI) classExtraData->cameraRotation -= 2 * PI;
 			classExtraData->didSetCursorPosLast = TRUE;
