@@ -30,7 +30,7 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 			glMatrixMode(GL_PROJECTION);
 			glLoadIdentity();
 			glViewport(0, 0, width, height);
-			gluPerspective(90, (float)width/(float)height, 0.01, 100);
+			gluPerspective(90, (float)width/(float)height, 0.05, 100);
 			gluLookAt(classExtraData->playerX, classExtraData->playerY, 0, classExtraData->playerX + cos(classExtraData->cameraRotation), classExtraData->playerY + sin(classExtraData->cameraRotation), 0, 0, 0, 1);
 			// Set texture to draw with
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 256, 256, 0, GL_RGB, GL_UNSIGNED_BYTE, classExtraData->textures);
@@ -224,8 +224,18 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 			{
 				float x = classExtraData->playerX;
 				float y = classExtraData->playerY;
-				int tileX;
-				int tileY;
+				int currentTileX = floor(x + 0.5);
+				int currentTileY = floor(-y + 0.5);
+				//int tileX;
+				//int tileY;
+				BOOL isNorthWall = (TILE_INFOS[ROOM[currentTileY - 1][currentTileX]].flags & TILE_FLAGS_WALL);
+				BOOL isEastWall = (TILE_INFOS[ROOM[currentTileY][currentTileX + 1]].flags & TILE_FLAGS_WALL);
+				BOOL isSouthWall = (TILE_INFOS[ROOM[currentTileY + 1][currentTileX]].flags & TILE_FLAGS_WALL);
+				BOOL isWestWall = (TILE_INFOS[ROOM[currentTileY][currentTileX - 1]].flags & TILE_FLAGS_WALL);
+				float northWallY = 0. - currentTileY + 0.4;
+				float southWallY = 0. - currentTileY - 0.4;
+				float westWallX = currentTileX - 0.4;
+				float eastWallX = currentTileX + 0.4;
 				TILE_INFO tileInfo;
 				if (classExtraData->upPressed)
 				{
@@ -247,16 +257,24 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 					x += cos(classExtraData->cameraRotation + PI * 1.5) * MOVEMENT_SPEED;
 					y += sin(classExtraData->cameraRotation + PI * 1.5) * MOVEMENT_SPEED;
 				}
-				tileX = floor(x + 0.5);
-				tileY = floor(-y + 0.5);
-				tileInfo = TILE_INFOS[ROOM[tileY][tileX]];
-				if (!(tileInfo.flags & TILE_FLAGS_WALL))
+				if (isNorthWall && y > northWallY)
 				{
-					classExtraData->playerX = x;
-					classExtraData->playerY = y;
+					y = northWallY;
 				}
-				//classExtraData->playerX = x;
-				//classExtraData->playerY = y;
+				if (isSouthWall && y < southWallY)
+				{
+					y = southWallY;
+				}
+				if (isWestWall && x < westWallX)
+				{
+					x = westWallX;
+				}
+				if (isEastWall && x > eastWallX)
+				{
+					x = eastWallX;
+				}
+				classExtraData->playerX = x;
+				classExtraData->playerY = y;
 				break;
 			}
 		}
