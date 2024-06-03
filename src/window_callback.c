@@ -232,6 +232,10 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 				BOOL isEastWall = (TILE_INFOS[ROOM[currentTileY][currentTileX + 1]].flags & TILE_FLAGS_WALL);
 				BOOL isSouthWall = (TILE_INFOS[ROOM[currentTileY + 1][currentTileX]].flags & TILE_FLAGS_WALL);
 				BOOL isWestWall = (TILE_INFOS[ROOM[currentTileY][currentTileX - 1]].flags & TILE_FLAGS_WALL);
+				BOOL isNorthEastWall = (TILE_INFOS[ROOM[currentTileY - 1][currentTileX + 1]].flags & TILE_FLAGS_WALL);
+				BOOL isSouthEastWall = (TILE_INFOS[ROOM[currentTileY + 1][currentTileX + 1]].flags & TILE_FLAGS_WALL);
+				BOOL isSouthWestWall = (TILE_INFOS[ROOM[currentTileY + 1][currentTileX - 1]].flags & TILE_FLAGS_WALL);
+				BOOL isNorthWestWall = (TILE_INFOS[ROOM[currentTileY - 1][currentTileX - 1]].flags & TILE_FLAGS_WALL);
 				float northWallY = 0. - currentTileY + 0.4;
 				float southWallY = 0. - currentTileY - 0.4;
 				float westWallX = currentTileX - 0.4;
@@ -272,6 +276,26 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 				if (isEastWall && x > eastWallX)
 				{
 					x = eastWallX;
+				}
+				if (isNorthEastWall && x > eastWallX && y > northWallY)
+				{
+					x = eastWallX;
+					y = northWallY;
+				}
+				if (isSouthEastWall && x > eastWallX && y < southWallY)
+				{
+					x = eastWallX;
+					y = southWallY;
+				}
+				if (isSouthWestWall && x < westWallX && y < southWallY)
+				{
+					x = westWallX;
+					y = southWallY;
+				}
+				if (isNorthWestWall && x < westWallX && y > northWallY)
+				{
+					x = westWallX;
+					y = northWallY;
 				}
 				classExtraData->playerX = x;
 				classExtraData->playerY = y;
