@@ -1,0 +1,27 @@
+name ROOM_MAIN
+
+#key
+
+t TILE_TEST
+B TILE_STONE_BRICK_WALL
+w TILE_WOOD_PLANKS
+P TILE_STONE_BRICKS_LANDSCAPE_PAINTING
+
+#tiles
+
+tB BBB BBBBBB   
+BwBwwwBwwwwwwB  
+BwBBBwBwBwBBwBB 
+BwBBBwwwBwBBwwwB
+BwwwBBBBBwBBBBB 
+PwtwwwwwwwwwwwwB
+BwwwBBBBBBBBwBB 
+ BwB   B   BwB  
+  B   BwB  BwB  
+     BBwBB BwB  
+ BBBBwwwwwBBwB  
+BwwwwwwwwwBBwB  
+ BBBBwwwwwwwwB  
+BwwwwwwwwwBBB   
+ BBBBwwwwwB     
+     BBBBB      
