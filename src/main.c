@@ -30,6 +30,7 @@ int Main(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, int iCmdSho
 	UINT timer;
 	int screenWidth = GetSystemMetrics(SM_CXSCREEN);
 	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+	BYTE *textures;
 	// Register window class
 	{
 		WNDCLASSA windowClassData;
@@ -85,9 +86,9 @@ int Main(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, int iCmdSho
 		pixelFormatData.nSize = sizeof(pixelFormatData);
 		pixelFormatData.nVersion = 1;
 		pixelFormatData.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-		pixelFormatData.iPixelType = PFD_TYPE_RGBA; //PFD_TYPE_COLORINDEX;
+		pixelFormatData.iPixelType = PFD_TYPE_RGBA;
 		pixelFormatData.cColorBits = 24;
-		pixelFormatData.cDepthBits = 24;
+		pixelFormatData.cDepthBits = 8;
 		pixelFormatData.cAlphaBits = 0;
 		pixelFormat = ChoosePixelFormat(windowDeviceContext, &pixelFormatData);
 		if (pixelFormat == 0) return MGERROR_CREATE_PIXEL_FROMAT;
@@ -99,9 +100,6 @@ int Main(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, int iCmdSho
 	// Set render context
 	boolResult = wglMakeCurrent(windowDeviceContext, renderContext);
 	if (!boolResult) return MGERROR_MAKE_OPENGL_RENDER_CONTEXT_CURRENT;
-	// Allocate memory for texture sheet
-	classExtraData.textures = malloc(256 * 256 * 3 * sizeof(BYTE));
-	if (classExtraData.textures == NULL) return MGERROR_ALLOCATE_MEMORY_FOR_TEXTURES;
 	// Load texture sheet from bitmap resource
 	{
 		HBITMAP hBitmap;
@@ -113,20 +111,24 @@ int Main(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, int iCmdSho
 		intResult = GetObjectA(hBitmap, sizeof(BITMAP), &bitmap);
 		if (intResult == 0) return MGERROR_LOAD_TEXTURES_BITMAP_RESOURCE;
 		// Check that the bitmap has the right properties
-		if (bitmap.bmWidth != 256 || bitmap.bmHeight != 256 || bitmap.bmBitsPixel != 24 || bitmap.bmPlanes != 1 || bitmap.bmType != 0 || bitmap.bmBits == NULL)
-			return MGERROR_TEXTURES_BITMAP_RESOURCE_BAD_IMAGE_FROMAT;
+		if (bitmap.bmBitsPixel != 24 || bitmap.bmPlanes != 1 || bitmap.bmType != 0 || bitmap.bmBits == NULL) return MGERROR_TEXTURES_BITMAP_RESOURCE_BAD_IMAGE_FROMAT;
+		// Allocate memory for texture sheet
+		textures = malloc(bitmap.bmWidth * bitmap.bmHeight * 3 * sizeof(BYTE));
+		if (textures == NULL) return MGERROR_ALLOCATE_MEMORY_FOR_TEXTURES;
 		// Copy the pixels from the bitmap to the texture sheet
-		for (y = 0; y < 256; y++)
+		for (y = 0; y < bitmap.bmHeight; y++)
 		{
 			DWORD x;
-			for (x = 0; x < 256; x++)
+			for (x = 0; x < bitmap.bmWidth; x++)
 			{
-				DWORD pixelIndex = (x + y * 256) * 3;
-				classExtraData.textures[pixelIndex] = ((BYTE *)bitmap.bmBits)[pixelIndex + 2];
-				classExtraData.textures[pixelIndex + 1] = ((BYTE *)bitmap.bmBits)[pixelIndex + 1];
-				classExtraData.textures[pixelIndex + 2] = ((BYTE *)bitmap.bmBits)[pixelIndex];
+				DWORD pixelIndex = (x + y * bitmap.bmWidth) * 3;
+				textures[pixelIndex] = ((BYTE *)bitmap.bmBits)[pixelIndex + 2];
+				textures[pixelIndex + 1] = ((BYTE *)bitmap.bmBits)[pixelIndex + 1];
+				textures[pixelIndex + 2] = ((BYTE *)bitmap.bmBits)[pixelIndex];
 			}
 		}
+		// Set the rendering image to the image we loaded from the bitmap resource
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, bitmap.bmWidth, bitmap.bmHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, textures);
 		// Delete bitmap
 		boolResult = DeleteObject(hBitmap);
 		if (!boolResult) return MGERROR_TEXTURES_BITMAP_RESOURCE_DELETE;
@@ -148,7 +150,7 @@ int Main(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, int iCmdSho
 	// Cleanup
 	wglMakeCurrent(NULL, NULL);
 	KillTimer(window, timer);
-	free(classExtraData.textures);
+	free(textures);
 
 	return MGERROR_NONE;
 }

@@ -20,8 +20,6 @@ typedef struct tagClassExtraData
 	float playerY;
 	DWORD lastTime;
 	BOOL isFullscreen;
-	GLuint texture;
-	BYTE *textures;
 	BOOL hasFocus;
 	SHORT cursorX;
 	BOOL didSetCursorPosLast;
@@ -98,6 +96,8 @@ typedef int MGERROR;
 #define TICK_TIMER 2
 #define MOVEMENT_SPEED 0.015
 #define CAMERA_MOVEMENT_SPEED (2 * PI * 0.002)
+#define TEXTURE_SHEET_WIDTH 256
+#define TEXTURE_SHEET_HEIGHT 256
 
 // --- Tables ---
 

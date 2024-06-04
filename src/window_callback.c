@@ -32,8 +32,6 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 			glViewport(0, 0, width, height);
 			gluPerspective(90, (float)width/(float)height, 0.05, 100);
 			gluLookAt(classExtraData->playerX, classExtraData->playerY, 0, classExtraData->playerX + cos(classExtraData->cameraRotation), classExtraData->playerY + sin(classExtraData->cameraRotation), 0, 0, 0, 1);
-			// Set texture to draw with
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 256, 256, 0, GL_RGB, GL_UNSIGNED_BYTE, classExtraData->textures);
 			// Start
 			glBegin(GL_TRIANGLES);
 			// Draw each tile
