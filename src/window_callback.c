@@ -47,7 +47,8 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 					TILE southTile = TILE_NULL;
 					TILE westTile = TILE_NULL;
 					TILE_INFO tileInfo = TILE_INFOS[tile];
-					TEXTURE texture = tileInfo.texture;
+					TEXTURE floorEastWestTexture = tileInfo.floorEastWestTexture;
+					TEXTURE ceilingNorthSouthTexture = tileInfo.ceilingNorthSouthTexture;
 					BYTE tileFlags = tileInfo.flags;
 					// Do not render null tiles
 					if (tile == TILE_NULL) continue;
@@ -66,10 +67,14 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 						float top = 0.5;
 						float bottom = -0.5;
 						// Calculate texture positions
-						float textureLeft = texture % 16 * (1. / 16.);
-						float textureRight = textureLeft + (1. / 16.);
-						float textureTop = 1 - (texture / 16 * (1. / 16.));
-						float textureBottom = textureTop - (1. / 16.);
+						float floorEastWestTextureLeft = floorEastWestTexture % 16 * (1. / 16.);
+						float floorEastWestTextureRight = floorEastWestTextureLeft + (1. / 16.);
+						float floorEastWestTextureTop = 1 - (floorEastWestTexture / 16 * (1. / 16.));
+						float floorEastWestTextureBottom = floorEastWestTextureTop - (1. / 16.);
+						float ceilingNorthSouthTextureLeft = ceilingNorthSouthTexture % 16 * (1. / 16.);
+						float ceilingNorthSouthTextureRight = ceilingNorthSouthTextureLeft + (1. / 16.);
+						float ceilingNorthSouthTextureTop = 1 - (ceilingNorthSouthTexture / 16 * (1. / 16.));
+						float ceilingNorthSouthTextureBottom = ceilingNorthSouthTextureTop - (1. / 16.);
 						// Get which walls should be drawn
 						BOOL drawNorth = FALSE;
 						BOOL drawEast = FALSE;
@@ -93,97 +98,97 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 						if (drawTop)
 						{
 							// Top
-							glTexCoord2f(textureLeft, textureTop);
+							glTexCoord2f(ceilingNorthSouthTextureLeft, ceilingNorthSouthTextureTop);
 							glVertex3f(west, north, top); // Top left
-							glTexCoord2f(textureLeft, textureBottom);
+							glTexCoord2f(ceilingNorthSouthTextureLeft, ceilingNorthSouthTextureBottom);
 							glVertex3f(west, south, top); // Bottom left
-							glTexCoord2f(textureRight, textureBottom);
+							glTexCoord2f(ceilingNorthSouthTextureRight, ceilingNorthSouthTextureBottom);
 							glVertex3f(east, south, top); // Bottom right
-							glTexCoord2f(textureLeft, textureTop);
+							glTexCoord2f(ceilingNorthSouthTextureLeft, ceilingNorthSouthTextureTop);
 							glVertex3f(west, north, top); // Top left
-							glTexCoord2f(textureRight, textureBottom);
+							glTexCoord2f(ceilingNorthSouthTextureRight, ceilingNorthSouthTextureBottom);
 							glVertex3f(east, south, top); // Bottom right
-							glTexCoord2f(textureRight, textureTop);
+							glTexCoord2f(ceilingNorthSouthTextureRight, ceilingNorthSouthTextureTop);
 							glVertex3f(east, north, top); // Top right
 						}
 						if (drawBottom)
 						{
 							// Bottom
-							glTexCoord2f(textureLeft, textureTop);
+							glTexCoord2f(floorEastWestTextureLeft, floorEastWestTextureTop);
 							glVertex3f(west, north, bottom); // Top left
-							glTexCoord2f(textureLeft, textureBottom);
+							glTexCoord2f(floorEastWestTextureLeft, floorEastWestTextureBottom);
 							glVertex3f(west, south, bottom); // Bottom left
-							glTexCoord2f(textureRight, textureBottom);
+							glTexCoord2f(floorEastWestTextureRight, floorEastWestTextureBottom);
 							glVertex3f(east, south, bottom); // Bottom right
-							glTexCoord2f(textureLeft, textureTop);
+							glTexCoord2f(floorEastWestTextureLeft, floorEastWestTextureTop);
 							glVertex3f(west, north, bottom); // Top left
-							glTexCoord2f(textureRight, textureBottom);
+							glTexCoord2f(floorEastWestTextureRight, floorEastWestTextureBottom);
 							glVertex3f(east, south, bottom); // Bottom right
-							glTexCoord2f(textureRight, textureTop);
+							glTexCoord2f(floorEastWestTextureRight, floorEastWestTextureTop);
 							glVertex3f(east, north, bottom); // Top right
 						}
 						if (drawNorth)
 						{
 							// North
-							glTexCoord2f(textureLeft, textureTop);
+							glTexCoord2f(ceilingNorthSouthTextureLeft, ceilingNorthSouthTextureTop);
 							glVertex3f(east, north, top); // Top left
-							glTexCoord2f(textureLeft, textureBottom);
+							glTexCoord2f(ceilingNorthSouthTextureLeft, ceilingNorthSouthTextureBottom);
 							glVertex3f(east, north, bottom); // Bottom left
-							glTexCoord2f(textureRight, textureBottom);
+							glTexCoord2f(ceilingNorthSouthTextureRight, ceilingNorthSouthTextureBottom);
 							glVertex3f(west, north, bottom); // Bottom right
-							glTexCoord2f(textureLeft, textureTop);
+							glTexCoord2f(ceilingNorthSouthTextureLeft, ceilingNorthSouthTextureTop);
 							glVertex3f(east, north, top); // Top left
-							glTexCoord2f(textureRight, textureBottom);
+							glTexCoord2f(ceilingNorthSouthTextureRight, ceilingNorthSouthTextureBottom);
 							glVertex3f(west, north, bottom); // Bottom right
-							glTexCoord2f(textureRight, textureTop);
+							glTexCoord2f(ceilingNorthSouthTextureRight, ceilingNorthSouthTextureTop);
 							glVertex3f(west, north, top); // Top right
 						}
 						if (drawEast)
 						{
 							// East
-							glTexCoord2f(textureLeft, textureTop);
+							glTexCoord2f(floorEastWestTextureLeft, floorEastWestTextureTop);
 							glVertex3f(east, south, top); // Top left
-							glTexCoord2f(textureLeft, textureBottom);
+							glTexCoord2f(floorEastWestTextureLeft, floorEastWestTextureBottom);
 							glVertex3f(east, south, bottom); // Bottom left
-							glTexCoord2f(textureRight, textureBottom);
+							glTexCoord2f(floorEastWestTextureRight, floorEastWestTextureBottom);
 							glVertex3f(east, north, bottom); // Bottom right
-							glTexCoord2f(textureLeft, textureTop);
+							glTexCoord2f(floorEastWestTextureLeft, floorEastWestTextureTop);
 							glVertex3f(east, south, top); // Top left
-							glTexCoord2f(textureRight, textureBottom);
+							glTexCoord2f(floorEastWestTextureRight, floorEastWestTextureBottom);
 							glVertex3f(east, north, bottom); // Bottom right
-							glTexCoord2f(textureRight, textureTop);
+							glTexCoord2f(floorEastWestTextureRight, floorEastWestTextureTop);
 							glVertex3f(east, north, top); // Top right
 						}
 						if (drawSouth)
 						{
 							// South
-							glTexCoord2f(textureLeft, textureTop);
+							glTexCoord2f(ceilingNorthSouthTextureLeft, ceilingNorthSouthTextureTop);
 							glVertex3f(west, south, top); // Top left
-							glTexCoord2f(textureLeft, textureBottom);
+							glTexCoord2f(ceilingNorthSouthTextureLeft, ceilingNorthSouthTextureBottom);
 							glVertex3f(west, south, bottom); // Bottom left
-							glTexCoord2f(textureRight, textureBottom);
+							glTexCoord2f(ceilingNorthSouthTextureRight, ceilingNorthSouthTextureBottom);
 							glVertex3f(east, south, bottom); // Bottom right
-							glTexCoord2f(textureLeft, textureTop);
+							glTexCoord2f(ceilingNorthSouthTextureLeft, ceilingNorthSouthTextureTop);
 							glVertex3f(west, south, top); // Top left
-							glTexCoord2f(textureRight, textureBottom);
+							glTexCoord2f(ceilingNorthSouthTextureRight, ceilingNorthSouthTextureBottom);
 							glVertex3f(east, south, bottom); // Bottom right
-							glTexCoord2f(textureRight, textureTop);
+							glTexCoord2f(ceilingNorthSouthTextureRight, ceilingNorthSouthTextureTop);
 							glVertex3f(east, south, top); // Top right
 						}
 						if (drawWest)
 						{
 							// West
-							glTexCoord2f(textureLeft, textureTop);
+							glTexCoord2f(floorEastWestTextureLeft, floorEastWestTextureTop);
 							glVertex3f(west, north, top); // Top left
-							glTexCoord2f(textureLeft, textureBottom);
+							glTexCoord2f(floorEastWestTextureLeft, floorEastWestTextureBottom);
 							glVertex3f(west, north, bottom); // Bottom left
-							glTexCoord2f(textureRight, textureBottom);
+							glTexCoord2f(floorEastWestTextureRight, floorEastWestTextureBottom);
 							glVertex3f(west, south, bottom); // Bottom right
-							glTexCoord2f(textureLeft, textureTop);
+							glTexCoord2f(floorEastWestTextureLeft, floorEastWestTextureTop);
 							glVertex3f(west, north, top); // Top left
-							glTexCoord2f(textureRight, textureBottom);
+							glTexCoord2f(floorEastWestTextureRight, floorEastWestTextureBottom);
 							glVertex3f(west, south, bottom); // Bottom right
-							glTexCoord2f(textureRight, textureTop);
+							glTexCoord2f(floorEastWestTextureRight, floorEastWestTextureTop);
 							glVertex3f(west, south, top); // Top right
 						}
 					}
@@ -210,22 +215,25 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 		switch (wParam) {
 		case RENDER_TIMER:
 			{
+				// Don't redraw if less than 10ms has passed since the last redraw
 				DWORD time = GetTickCount();
 				DWORD deltaTime = time - classExtraData->lastTime;
 				if (deltaTime < 10) break;
-				//classExtraData->cameraRotation += (float)deltaTime / 1000 / 1;
+				// Redraw
 				RedrawWindow(window, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
+				// Set the time the redraw was done at
 				classExtraData->lastTime = time;
 				break;
 			}
 		case TICK_TIMER:
 			{
+				// Get player pos from struct
 				float x = classExtraData->playerX;
 				float y = classExtraData->playerY;
+				// Get tile player is in
 				int currentTileX = floor(x + 0.5);
 				int currentTileY = floor(-y + 0.5);
-				//int tileX;
-				//int tileY;
+				// Get is surrounding tiles are walls
 				BOOL isNorthWall = (TILE_INFOS[ROOM[currentTileY - 1][currentTileX]].flags & TILE_FLAGS_WALL);
 				BOOL isEastWall = (TILE_INFOS[ROOM[currentTileY][currentTileX + 1]].flags & TILE_FLAGS_WALL);
 				BOOL isSouthWall = (TILE_INFOS[ROOM[currentTileY + 1][currentTileX]].flags & TILE_FLAGS_WALL);
@@ -234,11 +242,12 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 				BOOL isSouthEastWall = (TILE_INFOS[ROOM[currentTileY + 1][currentTileX + 1]].flags & TILE_FLAGS_WALL);
 				BOOL isSouthWestWall = (TILE_INFOS[ROOM[currentTileY + 1][currentTileX - 1]].flags & TILE_FLAGS_WALL);
 				BOOL isNorthWestWall = (TILE_INFOS[ROOM[currentTileY - 1][currentTileX - 1]].flags & TILE_FLAGS_WALL);
+				// Get the collision positions of the surrounding tiles
 				float northWallY = 0. - currentTileY + 0.4;
 				float southWallY = 0. - currentTileY - 0.4;
 				float westWallX = currentTileX - 0.4;
 				float eastWallX = currentTileX + 0.4;
-				TILE_INFO tileInfo;
+				// Calculate a new position where player should move to based on movement keys pressed
 				if (classExtraData->upPressed)
 				{
 					x += cos(classExtraData->cameraRotation) * MOVEMENT_SPEED;
@@ -259,22 +268,11 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 					x += cos(classExtraData->cameraRotation + PI * 1.5) * MOVEMENT_SPEED;
 					y += sin(classExtraData->cameraRotation + PI * 1.5) * MOVEMENT_SPEED;
 				}
-				if (isNorthWall && y > northWallY)
-				{
-					y = northWallY;
-				}
-				if (isSouthWall && y < southWallY)
-				{
-					y = southWallY;
-				}
-				if (isWestWall && x < westWallX)
-				{
-					x = westWallX;
-				}
-				if (isEastWall && x > eastWallX)
-				{
-					x = eastWallX;
-				}
+				// If the new position is inside a surrounding tile that is a wall, adjust the new position to be outside the wall
+				if (isNorthWall && y > northWallY) y = northWallY;
+				if (isSouthWall && y < southWallY) y = southWallY;
+				if (isWestWall && x < westWallX) x = westWallX;
+				if (isEastWall && x > eastWallX) x = eastWallX;
 				if (isNorthEastWall && x > eastWallX && y > northWallY)
 				{
 					x = eastWallX;
@@ -295,6 +293,7 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 					x = westWallX;
 					y = northWallY;
 				}
+				// Set the player pos to the new pos
 				classExtraData->playerX = x;
 				classExtraData->playerY = y;
 				break;

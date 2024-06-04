@@ -35,6 +35,7 @@ enum tagTEXTURE
 	TEXTURE_TEST,
 	TEXTURE_WOOD_PLANKS,
 	TEXTURE_STONE_BRICKS,
+	TEXTURE_STONE_BRICKS_LANDSCAPE_PAINTING,
 };
 /// A texture ID.
 typedef BYTE TEXTURE;
@@ -46,6 +47,7 @@ enum tagTILE
 	TILE_TEST,
 	TILE_STONE_BRICK_WALL,
 	TILE_WOOD_PLANKS,
+	TILE_STONE_BRICKS_LANDSCAPE_PAINTING,
 	TILE_COUNT,
 };
 /// A tile ID.
@@ -60,7 +62,8 @@ enum tagTILE_FLAGS
 /// The type of each members of the `TILE_INFOS` array.
 typedef struct tagTILE_INFO
 {
-	TEXTURE texture;
+	TEXTURE ceilingNorthSouthTexture;
+	TEXTURE floorEastWestTexture;
 	BYTE flags;
 } TILE_INFO;
 
