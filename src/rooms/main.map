@@ -9,19 +9,19 @@ P TILE_STONE_BRICKS_LANDSCAPE_PAINTING
 
 #tiles
 
-tB BBB BBBBBB   
-BwBwwwBwwwwwwB  
-BwBBBwBwBwBBwBB 
+tB.BBB.BBBBBB...
+BwBwwwBwwwwwwB..
+BwBBBwBwBwBBwBB.
 BwBBBwwwBwBBwwwB
-BwwwBBBBBwBBBBB 
+BwwwBBBBBwBBBBB.
 PwtwwwwwwwwwwwwB
-BwwwBBBBBBBBwBB 
- BwB   B   BwB  
-  B   BwB  BwB  
-     BBwBB BwB  
- BBBBwwwwwBBwB  
-BwwwwwwwwwBBwB  
- BBBBwwwwwwwwB  
-BwwwwwwwwwBBB   
- BBBBwwwwwB     
-     BBBBB      
+BwwwBBBBBBBBwBB.
+.BwB...B...BwB..
+..B...BwB..BwB..
+.....BBwBB.BwB..
+.BBBBwwwwwBBwB..
+BwwwwwwwwwBBwB..
+.BBBBwwwwwwwwB..
+BwwwwwwwwwBBB...
+.BBBBwwwwwB.....
+.....BBBBB......
