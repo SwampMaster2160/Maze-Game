@@ -158,3 +158,4 @@ int Main(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, int iCmdSho
 #include "window_callback.c"
 #include "data.c"
 #include "error.c"
+#include "../bin/rooms.c"
