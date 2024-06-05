@@ -78,6 +78,7 @@ int Main(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, int iCmdSho
 	classExtraData.downPressed = FALSE;
 	classExtraData.leftPressed = FALSE;
 	classExtraData.rightPressed = FALSE;
+	classExtraData.playerRoom = ROOM_MAIN;
 	SetClassLongA(window, 0, (LONG)&classExtraData);
 	// Create render context
 	{

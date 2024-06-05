@@ -5,6 +5,15 @@
 
 // --- Types ---
 
+/// A list of room IDs.
+enum tagROOM
+{
+	ROOM_MAIN,
+	ROOM_COUNT,
+};
+/// A room ID.
+typedef BYTE ROOM;
+
 /// The main data struct for the window class.
 typedef struct tagClassExtraData
 {
@@ -18,6 +27,7 @@ typedef struct tagClassExtraData
 	float cameraRotation;
 	float playerX;
 	float playerY;
+	ROOM playerRoom;
 	DWORD lastTime;
 	BOOL isFullscreen;
 	BOOL hasFocus;
@@ -67,6 +77,12 @@ typedef struct tagTILE_INFO
 	BYTE flags;
 } TILE_INFO;
 
+/// The type of each members of the `ROOM_INFOS` array.
+typedef struct tagROOM_INFO
+{
+	const TILE *tiles;
+} ROOM_INFO;
+
 enum tagError
 {
 	MGERROR_NONE,
@@ -106,8 +122,11 @@ typedef int MGERROR;
 
 /// Info about each type tile, a tile ID is the index.
 const TILE_INFO TILE_INFOS[TILE_COUNT];
-const BYTE ROOM[16][16];
+/// Info about each room, a room ID is the index.
+const ROOM_INFO ROOM_INFOS[ROOM_COUNT];
+//const BYTE ROOM[16][16];
 const LPCSTR ERROR_MESSAGES[MGERROR_COUNT - 1];
+const TILE ROOM_MAIN_TILES[16][16];
 
 // --- Functions ---
 

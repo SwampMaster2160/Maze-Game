@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
 					printf("Error reading room name.\n");
 					return 1;
 				}
-				fprintf(outputFile, "#define RTC_ROOM_NAME %s\n", inputWord);
+				fprintf(outputFile, "#define RTC_ROOM_TILES %s_TILES\n", inputWord);
 			}
 			else
 			{
@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
 				return 1;
 			}
 			// If we are processing the first line, add the array definition
-			if (tileRow == 0) fprintf(outputFile, "const TILE RTC_ROOM_NAME[16][16] = {\n");
+			if (tileRow == 0) fprintf(outputFile, "const TILE RTC_ROOM_TILES[16][16] =\n{\n");
 			// Make sure the room is not more than 16 rows long
 			if (tileRow > 15)
 			{

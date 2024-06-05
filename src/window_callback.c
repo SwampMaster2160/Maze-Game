@@ -41,7 +41,8 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 				for (x = 0; x < 16; x++)
 				{
 					// Get tile
-					TILE tile = ROOM[y][x];
+					const TILE *roomTiles = ROOM_INFOS[classExtraData->playerRoom].tiles;
+					TILE tile = roomTiles[x + y * 16];
 					TILE northTile = TILE_NULL;
 					TILE eastTile = TILE_NULL;
 					TILE southTile = TILE_NULL;
@@ -53,10 +54,10 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 					// Do not render null tiles
 					if (tile == TILE_NULL) continue;
 					// Get tiles around tile
-					if (y != 0) northTile = ROOM[y - 1][x];
-					if (x != 0) westTile = ROOM[y][x - 1];
-					if (y != 15) southTile = ROOM[y + 1][x];
-					if (x != 15) eastTile = ROOM[y][x + 1];
+					if (y != 0) northTile = roomTiles[x + (y - 1) * 16];
+					if (x != 0) westTile = roomTiles[x - 1 + y * 16];
+					if (y != 15) southTile = roomTiles[x + (y + 1) * 16];
+					if (x != 15) eastTile = roomTiles[x + 1 + y * 16];
 
 					{
 						// Calculate tile positions
@@ -227,6 +228,8 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 			}
 		case TICK_TIMER:
 			{
+				// Get room
+				const TILE *roomTiles = ROOM_INFOS[classExtraData->playerRoom].tiles;
 				// Get player pos from struct
 				float x = classExtraData->playerX;
 				float y = classExtraData->playerY;
@@ -234,14 +237,14 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 				int currentTileX = floor(x + 0.5);
 				int currentTileY = floor(-y + 0.5);
 				// Get is surrounding tiles are walls
-				BOOL isNorthWall = (TILE_INFOS[ROOM[currentTileY - 1][currentTileX]].flags & TILE_FLAGS_WALL);
-				BOOL isEastWall = (TILE_INFOS[ROOM[currentTileY][currentTileX + 1]].flags & TILE_FLAGS_WALL);
-				BOOL isSouthWall = (TILE_INFOS[ROOM[currentTileY + 1][currentTileX]].flags & TILE_FLAGS_WALL);
-				BOOL isWestWall = (TILE_INFOS[ROOM[currentTileY][currentTileX - 1]].flags & TILE_FLAGS_WALL);
-				BOOL isNorthEastWall = (TILE_INFOS[ROOM[currentTileY - 1][currentTileX + 1]].flags & TILE_FLAGS_WALL);
-				BOOL isSouthEastWall = (TILE_INFOS[ROOM[currentTileY + 1][currentTileX + 1]].flags & TILE_FLAGS_WALL);
-				BOOL isSouthWestWall = (TILE_INFOS[ROOM[currentTileY + 1][currentTileX - 1]].flags & TILE_FLAGS_WALL);
-				BOOL isNorthWestWall = (TILE_INFOS[ROOM[currentTileY - 1][currentTileX - 1]].flags & TILE_FLAGS_WALL);
+				BOOL isNorthWall = (TILE_INFOS[roomTiles[(currentTileY - 1) * 16 + currentTileX]].flags & TILE_FLAGS_WALL);
+				BOOL isEastWall = (TILE_INFOS[roomTiles[currentTileY * 16 + currentTileX + 1]].flags & TILE_FLAGS_WALL);
+				BOOL isSouthWall = (TILE_INFOS[roomTiles[(currentTileY + 1) * 16 + currentTileX]].flags & TILE_FLAGS_WALL);
+				BOOL isWestWall = (TILE_INFOS[roomTiles[currentTileY * 16 + currentTileX - 1]].flags & TILE_FLAGS_WALL);
+				BOOL isNorthEastWall = (TILE_INFOS[roomTiles[(currentTileY - 1) * 16 + currentTileX + 1]].flags & TILE_FLAGS_WALL);
+				BOOL isSouthEastWall = (TILE_INFOS[roomTiles[(currentTileY + 1) * 16 + currentTileX + 1]].flags & TILE_FLAGS_WALL);
+				BOOL isSouthWestWall = (TILE_INFOS[roomTiles[(currentTileY + 1) * 16 + currentTileX - 1]].flags & TILE_FLAGS_WALL);
+				BOOL isNorthWestWall = (TILE_INFOS[roomTiles[(currentTileY - 1) * 16 + currentTileX - 1]].flags & TILE_FLAGS_WALL);
 				// Get the collision positions of the surrounding tiles
 				float northWallY = 0. - currentTileY + 0.4;
 				float southWallY = 0. - currentTileY - 0.4;
