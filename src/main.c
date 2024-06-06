@@ -68,8 +68,8 @@ int Main(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, int iCmdSho
 	if (timer == 0) return MGERROR_CREATE_TIMER;
 	// Set window extra data
 	classExtraData.cameraRotation = PI * 1.5;
-	classExtraData.playerX = 1;
-	classExtraData.playerY = -1;
+	classExtraData.playerX = 3;
+	classExtraData.playerY = -3;
 	classExtraData.isFullscreen = FALSE;
 	classExtraData.lastTime = GetTickCount();
 	classExtraData.cursorX = 0;
@@ -78,7 +78,7 @@ int Main(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, int iCmdSho
 	classExtraData.downPressed = FALSE;
 	classExtraData.leftPressed = FALSE;
 	classExtraData.rightPressed = FALSE;
-	classExtraData.playerRoom = ROOM_MAIN;
+	classExtraData.playerRoom = ROOM_G_0;
 	SetClassLongA(window, 0, (LONG)&classExtraData);
 	// Create render context
 	{
