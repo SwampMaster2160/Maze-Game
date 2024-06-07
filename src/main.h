@@ -86,10 +86,48 @@ typedef struct tagTILE_INFO
 	BYTE flags;
 } TILE_INFO;
 
+/// What type of extra data a `TILE_EXTRA_DATA` entry is.
+enum tagTILE_EXTRA_DATA_DISCRIMINANT
+{
+	TILE_EXTRA_DATA_END = 0,
+	TILE_EXTRA_DATA_WARP,
+};
+typedef BYTE TILE_EXTRA_DATA_DISCRIMINANT;
+
+typedef BYTE TILE_POS;
+#define TILE_POS_GET_X(pos) ((pos) & 0x0F)
+#define TILE_POS_GET_Y(pos) ((pos) >> 4)
+#define TILE_POS_NEW(x, y) ((x) | ((y) << 4))
+
+/// Defines extra data for a tile in the room.
+typedef struct tagTILE_EXTRA_DATA
+{
+	/// What type of extra data this is.
+	TILE_EXTRA_DATA_DISCRIMINANT discriminant;
+	/// What tile in the room has this extra data.
+	TILE_POS pos;
+	union
+	{
+		BYTE data_0;
+		/// If `discriminant` is `TILE_EXTRA_DATA_WARP`, this is the room to warp to.
+		ROOM destination_room;
+	};
+	union
+	{
+		BYTE data_1;
+		/// If `discriminant` is `TILE_EXTRA_DATA_WARP`, this is the tile pos in the destination room to warp to.
+		TILE_POS destination_pos;
+	};
+} TILE_EXTRA_DATA;
+
+#define TILE_EXTRA_DATA_END_NEW { TILE_EXTRA_DATA_END }
+#define TILE_EXTRA_DATA_WARP_NEW(x, y, destination_room, destination_x, destination_y) { TILE_EXTRA_DATA_WARP, TILE_POS_NEW(x, y), destination_room, TILE_POS_NEW(destination_x, destination_y) }
+
 /// The type of each members of the `ROOM_INFOS` array.
 typedef struct tagROOM_INFO
 {
 	const TILE *tiles;
+	const TILE_EXTRA_DATA *extraData;
 } ROOM_INFO;
 
 enum tagError
