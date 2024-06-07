@@ -229,13 +229,18 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 		case TICK_TIMER:
 			{
 				// Get room
-				const TILE *roomTiles = ROOM_INFOS[classExtraData->playerRoom].tiles;
+				const ROOM_INFO *roomInfo = &ROOM_INFOS[classExtraData->playerRoom];
+				const TILE *roomTiles = roomInfo->tiles;
+				const TILE *roomExtraData = roomInfo->extraData;
 				// Get player pos from struct
 				float x = classExtraData->playerX;
 				float y = classExtraData->playerY;
+				unsigned xTryingToMoveTo;
+				unsigned yTryingToMoveTo;
 				// Get tile player is in
-				int currentTileX = floor(x + 0.5);
-				int currentTileY = floor(-y + 0.5);
+				unsigned currentTileX = floor(x + 0.5);
+				unsigned currentTileY = floor(-y + 0.5);
+				unsigned i;
 				// Get is surrounding tiles are walls
 				BOOL isNorthWall = (TILE_INFOS[roomTiles[(currentTileY - 1) * 16 + currentTileX]].flags & TILE_FLAGS_WALL);
 				BOOL isEastWall = (TILE_INFOS[roomTiles[currentTileY * 16 + currentTileX + 1]].flags & TILE_FLAGS_WALL);
@@ -271,11 +276,30 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 					x += cos(classExtraData->cameraRotation + PI * 1.5) * MOVEMENT_SPEED;
 					y += sin(classExtraData->cameraRotation + PI * 1.5) * MOVEMENT_SPEED;
 				}
+				// Save the tile pos we are trying to move to so that we can see if we are trying to move to a warp tile later
+				xTryingToMoveTo = floor(x + 0.5);
+				yTryingToMoveTo = floor(-y + 0.5);
 				// If the new position is inside a surrounding tile that is a wall, adjust the new position to be outside the wall
-				if (isNorthWall && y > northWallY) y = northWallY;
-				if (isSouthWall && y < southWallY) y = southWallY;
-				if (isWestWall && x < westWallX) x = westWallX;
-				if (isEastWall && x > eastWallX) x = eastWallX;
+				if (isNorthWall && y > northWallY)
+				{
+					y = northWallY;
+					yTryingToMoveTo--;
+				}
+				if (isSouthWall && y < southWallY)
+				{
+					y = southWallY;
+					yTryingToMoveTo++;
+				}
+				if (isWestWall && x < westWallX)
+				{
+					x = westWallX;
+					xTryingToMoveTo--;
+				}
+				if (isEastWall && x > eastWallX)
+				{
+					x = eastWallX;
+					xTryingToMoveTo++;
+				}
 				if (isNorthEastWall && x > eastWallX && y > northWallY)
 				{
 					x = eastWallX;
@@ -299,6 +323,19 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 				// Set the player pos to the new pos
 				classExtraData->playerX = x;
 				classExtraData->playerY = y;
+				// Do warps
+				for (i = 0;; i++)
+				{
+					TILE_EXTRA_DATA *extraDataEntry = &roomExtraData[i];
+					TILE_POS pos;
+					if (extraDataEntry->discriminant == TILE_EXTRA_DATA_END) break;
+					if (extraDataEntry->discriminant != TILE_EXTRA_DATA_WARP) continue;
+					pos = extraDataEntry->pos;
+					if (TILE_POS_GET_X(pos) != xTryingToMoveTo || TILE_POS_GET_Y(pos) != yTryingToMoveTo) continue;
+					classExtraData->playerRoom = extraDataEntry->destination_room;
+					classExtraData->playerX = TILE_POS_GET_X(extraDataEntry->destination_pos);
+					classExtraData->playerY = -TILE_POS_GET_Y(extraDataEntry->destination_pos);
+				}
 				break;
 			}
 		}
