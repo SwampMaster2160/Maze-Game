@@ -209,16 +209,30 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 		PostQuitMessage(0);
 		break;
 	case WM_SIZE:
-		classExtraData->windowWidth = LOWORD(lParam);
-		classExtraData->windowHeight = HIWORD(lParam);
-		break;
+		{
+			classExtraData->windowWidth = LOWORD(lParam);
+			classExtraData->windowHeight = HIWORD(lParam);
+			break;
+		}
 	case WM_TIMER:
 		switch (wParam) {
 		case RENDER_TIMER:
 			{
+				DWORD time;
+				DWORD deltaTime;
+				BOOL boolResult;
+				RECT clientArea;
+				POINT clientPos = {0, 0};
+				boolResult = ClientToScreen(window, &clientPos);
+				if (!boolResult) break;
+				clientArea.left = clientPos.x;
+				clientArea.top = clientPos.y;
+				clientArea.right = clientArea.left + classExtraData->windowWidth;
+				clientArea.bottom = clientArea.top + classExtraData->windowHeight;
+				if (classExtraData->hasFocus) ClipCursor(&clientArea);
 				// Don't redraw if less than 10ms has passed since the last redraw
-				DWORD time = GetTickCount();
-				DWORD deltaTime = time - classExtraData->lastTime;
+				time = GetTickCount();
+				deltaTime = time - classExtraData->lastTime;
 				if (deltaTime < 10) break;
 				// Redraw
 				RedrawWindow(window, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
@@ -231,7 +245,7 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 				// Get room
 				const ROOM_INFO *roomInfo = &ROOM_INFOS[classExtraData->playerRoom];
 				const TILE *roomTiles = roomInfo->tiles;
-				const TILE *roomExtraData = roomInfo->extraData;
+				const TILE_EXTRA_DATA *roomExtraData = roomInfo->extraData;
 				// Get player pos from struct
 				float x = classExtraData->playerX;
 				float y = classExtraData->playerY;
@@ -241,6 +255,8 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 				unsigned currentTileX = floor(x + 0.5);
 				unsigned currentTileY = floor(-y + 0.5);
 				unsigned i;
+				int movingDeltaX = 0;
+				int movingDeltaY = 0;
 				// Get is surrounding tiles are walls
 				BOOL isNorthWall = (TILE_INFOS[roomTiles[(currentTileY - 1) * 16 + currentTileX]].flags & TILE_FLAGS_WALL);
 				BOOL isEastWall = (TILE_INFOS[roomTiles[currentTileY * 16 + currentTileX + 1]].flags & TILE_FLAGS_WALL);
@@ -284,21 +300,25 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 				{
 					y = northWallY;
 					yTryingToMoveTo--;
+					movingDeltaY = -1;
 				}
 				if (isSouthWall && y < southWallY)
 				{
 					y = southWallY;
 					yTryingToMoveTo++;
+					movingDeltaY = 1;
 				}
 				if (isWestWall && x < westWallX)
 				{
 					x = westWallX;
 					xTryingToMoveTo--;
+					movingDeltaX = -1;
 				}
 				if (isEastWall && x > eastWallX)
 				{
 					x = eastWallX;
 					xTryingToMoveTo++;
+					movingDeltaX = 1;
 				}
 				if (isNorthEastWall && x > eastWallX && y > northWallY)
 				{
@@ -323,18 +343,31 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 				// Set the player pos to the new pos
 				classExtraData->playerX = x;
 				classExtraData->playerY = y;
-				// Do warps
+				// Do warps by looping over all tile extra datas and warping the player if they move onto a warp tile
 				for (i = 0;; i++)
 				{
-					TILE_EXTRA_DATA *extraDataEntry = &roomExtraData[i];
+					// Get tile extra data
+					TILE_EXTRA_DATA extraDataEntry = roomExtraData[i];
 					TILE_POS pos;
-					if (extraDataEntry->discriminant == TILE_EXTRA_DATA_END) break;
-					if (extraDataEntry->discriminant != TILE_EXTRA_DATA_WARP) continue;
-					pos = extraDataEntry->pos;
+					// Skip non-warps and end at an end element
+					if (extraDataEntry.discriminant == TILE_EXTRA_DATA_END) break;
+					if (extraDataEntry.discriminant != TILE_EXTRA_DATA_WARP) continue;
+					// Skip if the player is not trying to move to this warp tile
+					pos = extraDataEntry.pos;
 					if (TILE_POS_GET_X(pos) != xTryingToMoveTo || TILE_POS_GET_Y(pos) != yTryingToMoveTo) continue;
-					classExtraData->playerRoom = extraDataEntry->destination_room;
-					classExtraData->playerX = TILE_POS_GET_X(extraDataEntry->destination_pos);
-					classExtraData->playerY = -TILE_POS_GET_Y(extraDataEntry->destination_pos);
+					// Warp player to destination room and position
+					classExtraData->playerRoom = extraDataEntry.destination_room;
+					classExtraData->playerX = TILE_POS_GET_X(extraDataEntry.destination_pos);
+					classExtraData->playerY = -TILE_POS_GET_Y(extraDataEntry.destination_pos);
+					// If the player warped onto a wall, move the player forward slightly to avoid it
+					roomInfo = &ROOM_INFOS[classExtraData->playerRoom];
+					roomTiles = roomInfo->tiles;
+					if (TILE_INFOS[roomTiles[extraDataEntry.destination_pos]].flags & TILE_FLAGS_WALL)
+					{
+						classExtraData->playerX += movingDeltaX * 0.65;
+						classExtraData->playerY -= movingDeltaY * 0.65;
+					}
+					break;
 				}
 				break;
 			}
@@ -448,6 +481,7 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 	case WM_KILLFOCUS:
 		classExtraData->hasFocus = FALSE;
 		ShowCursor(TRUE);
+		ClipCursor(NULL);
 		break;
 	default:
 		return DefWindowProc(window, message, wParam, lParam);
