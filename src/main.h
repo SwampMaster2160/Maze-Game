@@ -15,6 +15,21 @@ enum tagROOM
 /// A room ID.
 typedef BYTE ROOM;
 
+/// A list of animations.
+enum tagANIMATION
+{
+	ANIMATION_NULL,
+	ANIMATION_WARP_TO_BLACK,
+	ANIMATION_FADE_FROM_BLACK,
+};
+/// An animation ID.
+typedef BYTE ANIMATION;
+
+typedef BYTE TILE_POS;
+#define TILE_POS_GET_X(pos) ((pos) & 0x0F)
+#define TILE_POS_GET_Y(pos) ((pos) >> 4)
+#define TILE_POS_NEW(x, y) ((x) | ((y) << 4))
+
 /// The main data struct for the window class.
 typedef struct tagClassExtraData
 {
@@ -38,6 +53,13 @@ typedef struct tagClassExtraData
 	BOOL downPressed;
 	BOOL leftPressed;
 	BOOL rightPressed;
+	ANIMATION animation;
+	BYTE animationTickCounter;
+	ROOM roomWarpingTo;
+	TILE_POS posWarpingTo;
+	signed char movingTileDeltaX;
+	signed char movingTileDeltaY;
+	BOOL isPausedForAnimation;
 } ClassExtraData;
 
 /// A list of textures in the texture bitmap.
@@ -93,11 +115,6 @@ enum tagTILE_EXTRA_DATA_DISCRIMINANT
 	TILE_EXTRA_DATA_WARP,
 };
 typedef BYTE TILE_EXTRA_DATA_DISCRIMINANT;
-
-typedef BYTE TILE_POS;
-#define TILE_POS_GET_X(pos) ((pos) & 0x0F)
-#define TILE_POS_GET_Y(pos) ((pos) >> 4)
-#define TILE_POS_NEW(x, y) ((x) | ((y) << 4))
 
 /// Defines extra data for a tile in the room.
 typedef struct tagTILE_EXTRA_DATA
