@@ -30,6 +30,9 @@ typedef BYTE TILE_POS;
 #define TILE_POS_GET_Y(pos) ((pos) >> 4)
 #define TILE_POS_NEW(x, y) ((x) | ((y) << 4))
 
+/// A warp pair id.
+typedef BYTE WARP_PAIR;
+
 /// The main data struct for the window class.
 typedef struct tagClassExtraData
 {
@@ -57,7 +60,8 @@ typedef struct tagClassExtraData
 	ANIMATION animation;
 	BYTE animationTickCounter;
 	ROOM roomWarpingTo;
-	TILE_POS posWarpingTo;
+	//TILE_POS posWarpingTo;
+	WARP_PAIR warpPair;
 	signed char movingTileDeltaX;
 	signed char movingTileDeltaY;
 	BOOL isPausedForAnimation;
@@ -127,20 +131,21 @@ typedef struct tagTILE_EXTRA_DATA
 	TILE_POS pos;
 	union
 	{
-		BYTE data_0;
+		BYTE data0;
 		/// If `discriminant` is `TILE_EXTRA_DATA_WARP`, this is the room to warp to.
-		ROOM destination_room;
+		ROOM destinationRoom;
 	};
 	union
 	{
-		BYTE data_1;
-		/// If `discriminant` is `TILE_EXTRA_DATA_WARP`, this is the tile pos in the destination room to warp to.
-		TILE_POS destination_pos;
+		BYTE data1;
+		/// If `discriminant` is `TILE_EXTRA_DATA_WARP`, will warp to the other warp in the destination room with the same pair id.
+		WARP_PAIR pairId;
 	};
 } TILE_EXTRA_DATA;
 
 #define TILE_EXTRA_DATA_END_NEW { TILE_EXTRA_DATA_END }
-#define TILE_EXTRA_DATA_WARP_NEW(x, y, destination_room, destination_x, destination_y) { TILE_EXTRA_DATA_WARP, TILE_POS_NEW(x, y), destination_room, TILE_POS_NEW(destination_x, destination_y) }
+//#define TILE_EXTRA_DATA_WARP_NEW(x, y, destination_room, destination_x, destination_y) { TILE_EXTRA_DATA_WARP, TILE_POS_NEW(x, y), destination_room, TILE_POS_NEW(destination_x, destination_y) }
+#define TILE_EXTRA_DATA_WARP_NEW(x, y, destination_room, pair_id) { TILE_EXTRA_DATA_WARP, TILE_POS_NEW(x, y), destination_room, pair_id }
 
 /// The type of each members of the `ROOM_INFOS` array.
 typedef struct tagROOM_INFO

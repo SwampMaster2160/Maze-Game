@@ -18,12 +18,13 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 			UINT width = classExtraData->windowWidth;
 			UINT height = classExtraData->windowHeight;
 			PAINTSTRUCT paintStruct;
-			float fadeAmount = 1;
+			float fadeAmount;
 			int y;
 			// Get fade color
 			switch (classExtraData->animation)
 			{
 			case ANIMATION_NULL:
+				fadeAmount = 1;
 				break;
 			case ANIMATION_WARP_TO_BLACK:
 				fadeAmount = 1. - classExtraData->animationTickCounter / (float)(TPS / 4);
@@ -33,7 +34,7 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 				break;
 			}
 			// Start
-			// Filter mode	
+			// Filter mode
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			// Other
@@ -298,14 +299,38 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 					case ANIMATION_WARP_TO_BLACK:
 						{
 							TILE tileOn;
+							ROOM_INFO *roomInfo;
+							TILE_EXTRA_DATA *tileExtraData;
+							TILE_POS posWarpingTo;
+							WARP_PAIR warpPairId;
+							// Skip if animation is not complete
 							if (classExtraData->animationTickCounter != TPS / 4) break;
+							// Change animation to fade from black and unpause
 							classExtraData->animation = ANIMATION_FADE_FROM_BLACK;
-							classExtraData->isPausedForAnimation = FALSE;
 							classExtraData->animationTickCounter = 0;
+							classExtraData->isPausedForAnimation = FALSE;
+							// Change player room
 							classExtraData->playerRoom = classExtraData->roomWarpingTo;
-							classExtraData->playerX = TILE_POS_GET_X(classExtraData->posWarpingTo);
-							classExtraData->playerY = -TILE_POS_GET_Y(classExtraData->posWarpingTo);
-							tileOn = ROOM_INFOS[classExtraData->playerRoom].tiles[classExtraData->posWarpingTo];
+							// Get room info
+							roomInfo = &ROOM_INFOS[classExtraData->playerRoom];
+							tileExtraData = roomInfo->extraData;
+							warpPairId = classExtraData->warpPair;
+							// Get pos in room to warp to by searching for a warp with the warp pair id
+							for (i = 0;; i++)
+							{
+								// Skip extra data that is not the paired warp
+								TILE_EXTRA_DATA tileExtraDataEntry = tileExtraData[i];
+								if (tileExtraDataEntry.discriminant != TILE_EXTRA_DATA_WARP) continue;
+								if (tileExtraDataEntry.pairId != warpPairId) continue;
+								// Get the warp pos
+								posWarpingTo = tileExtraDataEntry.pos;
+								break;
+							}
+							// Warp player
+							classExtraData->playerX = TILE_POS_GET_X(posWarpingTo);
+							classExtraData->playerY = -TILE_POS_GET_Y(posWarpingTo);
+							// If the warp is to a wall, move the player forward away from the wall
+							tileOn = ROOM_INFOS[classExtraData->playerRoom].tiles[posWarpingTo];
 							if (TILE_INFOS[tileOn].flags & TILE_FLAGS_WALL)
 							{
 								classExtraData->playerX += classExtraData->movingTileDeltaX * 0.65;
@@ -429,11 +454,11 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 						// Skip if the player is not trying to move to this warp tile
 						pos = extraDataEntry.pos;
 						if (TILE_POS_GET_X(pos) != xTryingToMoveTo || TILE_POS_GET_Y(pos) != yTryingToMoveTo) continue;
-						// Start animation
+						// Start warp animation
 						classExtraData->animation = ANIMATION_WARP_TO_BLACK;
 						classExtraData->animationTickCounter = 0;
-						classExtraData->roomWarpingTo = extraDataEntry.destination_room;
-						classExtraData->posWarpingTo = extraDataEntry.destination_pos;
+						classExtraData->roomWarpingTo = extraDataEntry.destinationRoom;
+						classExtraData->warpPair = extraDataEntry.pairId;
 						classExtraData->isPausedForAnimation = TRUE;
 						break;
 					}
