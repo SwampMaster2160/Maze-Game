@@ -44,7 +44,8 @@ typedef struct tagClassExtraData
 	float playerX;
 	float playerY;
 	ROOM playerRoom;
-	DWORD lastTime;
+	DWORD lastRedrawTime;
+	DWORD lastTickTime;
 	BOOL isFullscreen;
 	BOOL hasFocus;
 	SHORT cursorX;
@@ -60,6 +61,7 @@ typedef struct tagClassExtraData
 	signed char movingTileDeltaX;
 	signed char movingTileDeltaY;
 	BOOL isPausedForAnimation;
+	DWORD tickTimeCarry;
 } ClassExtraData;
 
 /// A list of textures in the texture bitmap.
@@ -177,7 +179,7 @@ typedef int MGERROR;
 #define TPS 100
 #define RENDER_TIMER 1
 #define TICK_TIMER 2
-#define MOVEMENT_SPEED 0.015
+#define MOVEMENT_SPEED (1. / TPS)
 #define CAMERA_MOVEMENT_SPEED (2 * PI * 0.002)
 #define TEXTURE_SHEET_WIDTH 256
 #define TEXTURE_SHEET_HEIGHT 256

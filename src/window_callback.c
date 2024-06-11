@@ -26,7 +26,7 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 			case ANIMATION_NULL:
 				break;
 			case ANIMATION_WARP_TO_BLACK:
-				fadeAmount = 1. - classExtraData->animationTickCounter / (float)(TPS / 6);
+				fadeAmount = 1. - classExtraData->animationTickCounter / (float)(TPS / 4);
 				break;
 			case ANIMATION_FADE_FROM_BLACK:
 				fadeAmount = classExtraData->animationTickCounter / (float)(TPS / 2);
@@ -247,12 +247,12 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 				if (classExtraData->hasFocus) ClipCursor(&clientArea);
 				// Don't redraw if less than 10ms has passed since the last redraw
 				time = GetTickCount();
-				deltaTime = time - classExtraData->lastTime;
+				deltaTime = time - classExtraData->lastRedrawTime;
 				if (deltaTime < 10) break;
 				// Redraw
 				RedrawWindow(window, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
 				// Set the time the redraw was done at
-				classExtraData->lastTime = time;
+				classExtraData->lastRedrawTime = time;
 				break;
 			}
 		case TICK_TIMER:
@@ -279,153 +279,164 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 				float southWallY;
 				float westWallX;
 				float eastWallX;
-				// Do animations
-				if (classExtraData->animation != ANIMATION_NULL) classExtraData->animationTickCounter++;
-				switch (classExtraData->animation)
+				DWORD tickTime = GetTickCount();
+				DWORD deltaTime = tickTime - classExtraData->lastTickTime + classExtraData->tickTimeCarry;
+				DWORD ticksToDo = deltaTime / (1000 / TPS);
+				DWORD tick;
+
+				classExtraData->lastTickTime = tickTime;
+				classExtraData->tickTimeCarry = deltaTime % (1000 / TPS);
+				// Do ticks
+				for (tick = 0; tick < ticksToDo; tick++)
 				{
-				case ANIMATION_NULL:
-					break;
-				case ANIMATION_WARP_TO_BLACK:
+				// Do animations
+					if (classExtraData->animation != ANIMATION_NULL) classExtraData->animationTickCounter++;
+					switch (classExtraData->animation)
 					{
-						TILE tileOn;
-						if (classExtraData->animationTickCounter != TPS / 6) break;
-						classExtraData->animation = ANIMATION_FADE_FROM_BLACK;
-						classExtraData->isPausedForAnimation = FALSE;
-						classExtraData->animationTickCounter = 0;
-						classExtraData->playerRoom = classExtraData->roomWarpingTo;
-						classExtraData->playerX = TILE_POS_GET_X(classExtraData->posWarpingTo);
-						classExtraData->playerY = -TILE_POS_GET_Y(classExtraData->posWarpingTo);
-						tileOn = ROOM_INFOS[classExtraData->playerRoom].tiles[classExtraData->posWarpingTo];
-						if (TILE_INFOS[tileOn].flags & TILE_FLAGS_WALL)
+					case ANIMATION_NULL:
+						break;
+					case ANIMATION_WARP_TO_BLACK:
 						{
-							classExtraData->playerX += classExtraData->movingTileDeltaX * 0.65;
-							classExtraData->playerY -= classExtraData->movingTileDeltaY * 0.65;
+							TILE tileOn;
+							if (classExtraData->animationTickCounter != TPS / 4) break;
+							classExtraData->animation = ANIMATION_FADE_FROM_BLACK;
+							classExtraData->isPausedForAnimation = FALSE;
+							classExtraData->animationTickCounter = 0;
+							classExtraData->playerRoom = classExtraData->roomWarpingTo;
+							classExtraData->playerX = TILE_POS_GET_X(classExtraData->posWarpingTo);
+							classExtraData->playerY = -TILE_POS_GET_Y(classExtraData->posWarpingTo);
+							tileOn = ROOM_INFOS[classExtraData->playerRoom].tiles[classExtraData->posWarpingTo];
+							if (TILE_INFOS[tileOn].flags & TILE_FLAGS_WALL)
+							{
+								classExtraData->playerX += classExtraData->movingTileDeltaX * 0.65;
+								classExtraData->playerY -= classExtraData->movingTileDeltaY * 0.65;
+							}
+							break;
 						}
+					case ANIMATION_FADE_FROM_BLACK:
+						if (classExtraData->animationTickCounter == TPS / 2) classExtraData->animation = ANIMATION_NULL;
 						break;
 					}
-				case ANIMATION_FADE_FROM_BLACK:
-					if (classExtraData->animationTickCounter == TPS / 2) classExtraData->animation = ANIMATION_NULL;
-					break;
-				}
-				// Tick the world if the game is not paused
-				if (classExtraData->isPausedForAnimation) break;
-				// Get room
-				roomInfo = &ROOM_INFOS[classExtraData->playerRoom];
-				roomTiles = roomInfo->tiles;
-				roomExtraData = roomInfo->extraData;
-				// Get player pos from struct
-				x = classExtraData->playerX;
-				y = classExtraData->playerY;
-				// Get tile player is in
-				currentTileX = floor(x + 0.5);
-				currentTileY = floor(-y + 0.5);
-				// Get is surrounding tiles are walls
-				isNorthWall = (TILE_INFOS[roomTiles[(currentTileY - 1) * 16 + currentTileX]].flags & TILE_FLAGS_WALL);
-				isEastWall = (TILE_INFOS[roomTiles[currentTileY * 16 + currentTileX + 1]].flags & TILE_FLAGS_WALL);
-				isSouthWall = (TILE_INFOS[roomTiles[(currentTileY + 1) * 16 + currentTileX]].flags & TILE_FLAGS_WALL);
-				isWestWall = (TILE_INFOS[roomTiles[currentTileY * 16 + currentTileX - 1]].flags & TILE_FLAGS_WALL);
-				isNorthEastWall = (TILE_INFOS[roomTiles[(currentTileY - 1) * 16 + currentTileX + 1]].flags & TILE_FLAGS_WALL);
-				isSouthEastWall = (TILE_INFOS[roomTiles[(currentTileY + 1) * 16 + currentTileX + 1]].flags & TILE_FLAGS_WALL);
-				isSouthWestWall = (TILE_INFOS[roomTiles[(currentTileY + 1) * 16 + currentTileX - 1]].flags & TILE_FLAGS_WALL);
-				isNorthWestWall = (TILE_INFOS[roomTiles[(currentTileY - 1) * 16 + currentTileX - 1]].flags & TILE_FLAGS_WALL);
-				// Get the collision positions of the surrounding tiles
-				northWallY = 0. - currentTileY + 0.4;
-				southWallY = 0. - currentTileY - 0.4;
-				westWallX = currentTileX - 0.4;
-				eastWallX = currentTileX + 0.4;
-				// Calculate a new position where player should move to based on movement keys pressed
-				if (classExtraData->upPressed)
-				{
-					x += cos(classExtraData->cameraRotation) * MOVEMENT_SPEED;
-					y += sin(classExtraData->cameraRotation) * MOVEMENT_SPEED;
-				}
-				if (classExtraData->leftPressed)
-				{
-					x += cos(classExtraData->cameraRotation + PI * 0.5) * MOVEMENT_SPEED;
-					y += sin(classExtraData->cameraRotation + PI * 0.5) * MOVEMENT_SPEED;
-				}
-				if (classExtraData->downPressed)
-				{
-					x += cos(classExtraData->cameraRotation + PI) * MOVEMENT_SPEED;
-					y += sin(classExtraData->cameraRotation + PI) * MOVEMENT_SPEED;
-				}
-				if (classExtraData->rightPressed)
-				{
-					x += cos(classExtraData->cameraRotation + PI * 1.5) * MOVEMENT_SPEED;
-					y += sin(classExtraData->cameraRotation + PI * 1.5) * MOVEMENT_SPEED;
-				}
-				// Save the tile pos we are trying to move to so that we can see if we are trying to move to a warp tile later
-				xTryingToMoveTo = floor(x + 0.5);
-				yTryingToMoveTo = floor(-y + 0.5);
-				// If the new position is inside a surrounding tile that is a wall, adjust the new position to be outside the wall
-				classExtraData->movingTileDeltaX = 0;
-				classExtraData->movingTileDeltaY = 0;
-				if (isNorthWall && y > northWallY)
-				{
-					y = northWallY;
-					yTryingToMoveTo--;
-					classExtraData->movingTileDeltaY = -1;
-				}
-				if (isSouthWall && y < southWallY)
-				{
-					y = southWallY;
-					yTryingToMoveTo++;
-					classExtraData->movingTileDeltaY = 1;
-				}
-				if (isWestWall && x < westWallX)
-				{
-					x = westWallX;
-					xTryingToMoveTo--;
-					classExtraData->movingTileDeltaX = -1;
-				}
-				if (isEastWall && x > eastWallX)
-				{
-					x = eastWallX;
-					xTryingToMoveTo++;
-					classExtraData->movingTileDeltaX = 1;
-				}
-				if (isNorthEastWall && x > eastWallX && y > northWallY)
-				{
-					x = eastWallX;
-					y = northWallY;
-				}
-				if (isSouthEastWall && x > eastWallX && y < southWallY)
-				{
-					x = eastWallX;
-					y = southWallY;
-				}
-				if (isSouthWestWall && x < westWallX && y < southWallY)
-				{
-					x = westWallX;
-					y = southWallY;
-				}
-				if (isNorthWestWall && x < westWallX && y > northWallY)
-				{
-					x = westWallX;
-					y = northWallY;
-				}
-				// Set the player pos to the new pos
-				classExtraData->playerX = x;
-				classExtraData->playerY = y;
-				// Do warps by looping over all tile extra datas and warping the player if they move onto a warp tile
-				for (i = 0;; i++)
-				{
-					// Get tile extra data
-					TILE_EXTRA_DATA extraDataEntry = roomExtraData[i];
-					TILE_POS pos;
-					// Skip non-warps and end at an end element
-					if (extraDataEntry.discriminant == TILE_EXTRA_DATA_END) break;
-					if (extraDataEntry.discriminant != TILE_EXTRA_DATA_WARP) continue;
-					// Skip if the player is not trying to move to this warp tile
-					pos = extraDataEntry.pos;
-					if (TILE_POS_GET_X(pos) != xTryingToMoveTo || TILE_POS_GET_Y(pos) != yTryingToMoveTo) continue;
-					// Start animation
-					classExtraData->animation = ANIMATION_WARP_TO_BLACK;
-					classExtraData->animationTickCounter = 0;
-					classExtraData->roomWarpingTo = extraDataEntry.destination_room;
-					classExtraData->posWarpingTo = extraDataEntry.destination_pos;
-					classExtraData->isPausedForAnimation = TRUE;
-					break;
+					// Tick the world if the game is not paused
+					if (classExtraData->isPausedForAnimation) continue;
+					// Get room
+					roomInfo = &ROOM_INFOS[classExtraData->playerRoom];
+					roomTiles = roomInfo->tiles;
+					roomExtraData = roomInfo->extraData;
+					// Get player pos from struct
+					x = classExtraData->playerX;
+					y = classExtraData->playerY;
+					// Get tile player is in
+					currentTileX = floor(x + 0.5);
+					currentTileY = floor(-y + 0.5);
+					// Get is surrounding tiles are walls
+					isNorthWall = (TILE_INFOS[roomTiles[(currentTileY - 1) * 16 + currentTileX]].flags & TILE_FLAGS_WALL);
+					isEastWall = (TILE_INFOS[roomTiles[currentTileY * 16 + currentTileX + 1]].flags & TILE_FLAGS_WALL);
+					isSouthWall = (TILE_INFOS[roomTiles[(currentTileY + 1) * 16 + currentTileX]].flags & TILE_FLAGS_WALL);
+					isWestWall = (TILE_INFOS[roomTiles[currentTileY * 16 + currentTileX - 1]].flags & TILE_FLAGS_WALL);
+					isNorthEastWall = (TILE_INFOS[roomTiles[(currentTileY - 1) * 16 + currentTileX + 1]].flags & TILE_FLAGS_WALL);
+					isSouthEastWall = (TILE_INFOS[roomTiles[(currentTileY + 1) * 16 + currentTileX + 1]].flags & TILE_FLAGS_WALL);
+					isSouthWestWall = (TILE_INFOS[roomTiles[(currentTileY + 1) * 16 + currentTileX - 1]].flags & TILE_FLAGS_WALL);
+					isNorthWestWall = (TILE_INFOS[roomTiles[(currentTileY - 1) * 16 + currentTileX - 1]].flags & TILE_FLAGS_WALL);
+					// Get the collision positions of the surrounding tiles
+					northWallY = 0. - currentTileY + 0.4;
+					southWallY = 0. - currentTileY - 0.4;
+					westWallX = currentTileX - 0.4;
+					eastWallX = currentTileX + 0.4;
+					// Calculate a new position where player should move to based on movement keys pressed
+					if (classExtraData->upPressed)
+					{
+						x += cos(classExtraData->cameraRotation) * MOVEMENT_SPEED;
+						y += sin(classExtraData->cameraRotation) * MOVEMENT_SPEED;
+					}
+					if (classExtraData->leftPressed)
+					{
+						x += cos(classExtraData->cameraRotation + PI * 0.5) * MOVEMENT_SPEED;
+						y += sin(classExtraData->cameraRotation + PI * 0.5) * MOVEMENT_SPEED;
+					}
+					if (classExtraData->downPressed)
+					{
+						x += cos(classExtraData->cameraRotation + PI) * MOVEMENT_SPEED;
+						y += sin(classExtraData->cameraRotation + PI) * MOVEMENT_SPEED;
+					}
+					if (classExtraData->rightPressed)
+					{
+						x += cos(classExtraData->cameraRotation + PI * 1.5) * MOVEMENT_SPEED;
+						y += sin(classExtraData->cameraRotation + PI * 1.5) * MOVEMENT_SPEED;
+					}
+					// Save the tile pos we are trying to move to so that we can see if we are trying to move to a warp tile later
+					xTryingToMoveTo = floor(x + 0.5);
+					yTryingToMoveTo = floor(-y + 0.5);
+					// If the new position is inside a surrounding tile that is a wall, adjust the new position to be outside the wall
+					classExtraData->movingTileDeltaX = 0;
+					classExtraData->movingTileDeltaY = 0;
+					if (isNorthWall && y > northWallY)
+					{
+						y = northWallY;
+						yTryingToMoveTo--;
+						classExtraData->movingTileDeltaY = -1;
+					}
+					if (isSouthWall && y < southWallY)
+					{
+						y = southWallY;
+						yTryingToMoveTo++;
+						classExtraData->movingTileDeltaY = 1;
+					}
+					if (isWestWall && x < westWallX)
+					{
+						x = westWallX;
+						xTryingToMoveTo--;
+						classExtraData->movingTileDeltaX = -1;
+					}
+					if (isEastWall && x > eastWallX)
+					{
+						x = eastWallX;
+						xTryingToMoveTo++;
+						classExtraData->movingTileDeltaX = 1;
+					}
+					if (isNorthEastWall && x > eastWallX && y > northWallY)
+					{
+						x = eastWallX;
+						y = northWallY;
+					}
+					if (isSouthEastWall && x > eastWallX && y < southWallY)
+					{
+						x = eastWallX;
+						y = southWallY;
+					}
+					if (isSouthWestWall && x < westWallX && y < southWallY)
+					{
+						x = westWallX;
+						y = southWallY;
+					}
+					if (isNorthWestWall && x < westWallX && y > northWallY)
+					{
+						x = westWallX;
+						y = northWallY;
+					}
+					// Set the player pos to the new pos
+					classExtraData->playerX = x;
+					classExtraData->playerY = y;
+					// Do warps by looping over all tile extra datas and warping the player if they move onto a warp tile
+					for (i = 0;; i++)
+					{
+						// Get tile extra data
+						TILE_EXTRA_DATA extraDataEntry = roomExtraData[i];
+						TILE_POS pos;
+						// Skip non-warps and end at an end element
+						if (extraDataEntry.discriminant == TILE_EXTRA_DATA_END) break;
+						if (extraDataEntry.discriminant != TILE_EXTRA_DATA_WARP) continue;
+						// Skip if the player is not trying to move to this warp tile
+						pos = extraDataEntry.pos;
+						if (TILE_POS_GET_X(pos) != xTryingToMoveTo || TILE_POS_GET_Y(pos) != yTryingToMoveTo) continue;
+						// Start animation
+						classExtraData->animation = ANIMATION_WARP_TO_BLACK;
+						classExtraData->animationTickCounter = 0;
+						classExtraData->roomWarpingTo = extraDataEntry.destination_room;
+						classExtraData->posWarpingTo = extraDataEntry.destination_pos;
+						classExtraData->isPausedForAnimation = TRUE;
+						break;
+					}
 				}
 				break;
 			}

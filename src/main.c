@@ -71,7 +71,8 @@ int Main(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, int iCmdSho
 	classExtraData.playerX = 3;
 	classExtraData.playerY = -3;
 	classExtraData.isFullscreen = FALSE;
-	classExtraData.lastTime = GetTickCount();
+	classExtraData.lastRedrawTime = GetTickCount();
+	classExtraData.lastTickTime = classExtraData.lastRedrawTime;
 	classExtraData.cursorX = 0;
 	classExtraData.didSetCursorPosLast = FALSE;
 	classExtraData.upPressed = FALSE;
@@ -81,6 +82,7 @@ int Main(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, int iCmdSho
 	classExtraData.playerRoom = ROOM_G_0;
 	classExtraData.animation = ANIMATION_NULL;
 	classExtraData.isPausedForAnimation = FALSE;
+	classExtraData.tickTimeCarry = 0;
 	SetClassLongA(window, 0, (LONG)&classExtraData);
 	// Create render context
 	{
