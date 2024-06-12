@@ -299,8 +299,8 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 					case ANIMATION_WARP_TO_BLACK:
 						{
 							TILE tileOn;
-							ROOM_INFO *roomInfo;
-							TILE_EXTRA_DATA *tileExtraData;
+							const ROOM_INFO *roomInfo;
+							const TILE_EXTRA_DATA *tileExtraData;
 							TILE_POS posWarpingTo;
 							WARP_PAIR warpPairId;
 							// Skip if animation is not complete
@@ -320,7 +320,7 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 							{
 								// Skip extra data that is not the paired warp
 								TILE_EXTRA_DATA tileExtraDataEntry = tileExtraData[i];
-								if (tileExtraDataEntry.discriminant != TILE_EXTRA_DATA_WARP) continue;
+								if (tileExtraDataEntry.discriminant != TILE_EXTRA_DATA_WARP && tileExtraDataEntry.discriminant != TILE_EXTRA_DATA_WARP_DESTINATION) continue;
 								if (tileExtraDataEntry.pairId != warpPairId) continue;
 								// Get the warp pos
 								posWarpingTo = tileExtraDataEntry.pos;

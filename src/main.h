@@ -82,6 +82,8 @@ enum tagTEXTURE
 	TEXTURE_CARPET_CORNER,
 	TEXTURE_CARPET_END,
 	TEXTURE_STONE_BRICKS_WOOD_DOOR,
+	TEXTURE_WOOD_PLANKS_HOLE,
+	TEXTURE_WOOD_PLANKS_EXTRA_PLANKS,
 };
 /// A texture ID.
 typedef BYTE TEXTURE;
@@ -95,6 +97,8 @@ enum tagTILE
 	TILE_WOOD_PLANKS,
 	TILE_STONE_BRICKS_LANDSCAPE_PAINTING,
 	TILE_STONE_BRICKS_WOOD_DOOR,
+	TILE_WOOD_PLANKS_FLOOR_HOLE,
+	TILE_WOOD_PLANKS_CEILING_HOLE,
 	TILE_COUNT,
 };
 /// A tile ID.
@@ -119,6 +123,7 @@ enum tagTILE_EXTRA_DATA_DISCRIMINANT
 {
 	TILE_EXTRA_DATA_END = 0,
 	TILE_EXTRA_DATA_WARP,
+	TILE_EXTRA_DATA_WARP_DESTINATION,
 };
 typedef BYTE TILE_EXTRA_DATA_DISCRIMINANT;
 
@@ -139,13 +144,14 @@ typedef struct tagTILE_EXTRA_DATA
 	{
 		BYTE data1;
 		/// If `discriminant` is `TILE_EXTRA_DATA_WARP`, will warp to the other warp in the destination room with the same pair id.
+		/// If `descriminant` is `TILE_EXTRA_DATA_WARP` or `TILE_EXTRA_DATA_WARP_DESTINATION`, this is the pair id that will be searched for.
 		WARP_PAIR pairId;
 	};
 } TILE_EXTRA_DATA;
 
 #define TILE_EXTRA_DATA_END_NEW { TILE_EXTRA_DATA_END }
-//#define TILE_EXTRA_DATA_WARP_NEW(x, y, destination_room, destination_x, destination_y) { TILE_EXTRA_DATA_WARP, TILE_POS_NEW(x, y), destination_room, TILE_POS_NEW(destination_x, destination_y) }
-#define TILE_EXTRA_DATA_WARP_NEW(x, y, destination_room, pair_id) { TILE_EXTRA_DATA_WARP, TILE_POS_NEW(x, y), destination_room, pair_id }
+#define TILE_EXTRA_DATA_WARP_NEW(x, y, destinationRoom, pairId) { TILE_EXTRA_DATA_WARP, TILE_POS_NEW(x, y), destinationRoom, pairId }
+#define TILE_EXTRA_DATA_WARP_DESTINATION_NEW(x, y, pairIdIn) { TILE_EXTRA_DATA_WARP_DESTINATION, TILE_POS_NEW(x, y), 0, pairIdIn }
 
 /// The type of each members of the `ROOM_INFOS` array.
 typedef struct tagROOM_INFO
