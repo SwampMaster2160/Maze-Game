@@ -310,21 +310,25 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 							classExtraData->animationTickCounter = 0;
 							classExtraData->isPausedForAnimation = FALSE;
 							// Change player room
-							classExtraData->playerRoom = classExtraData->roomWarpingTo;
+							if (classExtraData->roomWarpingTo != -1) classExtraData->playerRoom = classExtraData->roomWarpingTo;
 							// Get room info
 							roomInfo = &ROOM_INFOS[classExtraData->playerRoom];
 							tileExtraData = roomInfo->extraData;
 							warpPairId = classExtraData->warpPair;
 							// Get pos in room to warp to by searching for a warp with the warp pair id
-							for (i = 0;; i++)
+							if (warpPairId == -1) posWarpingTo = classExtraData->posWarpingFrom;
+							else
 							{
-								// Skip extra data that is not the paired warp
-								TILE_EXTRA_DATA tileExtraDataEntry = tileExtraData[i];
-								if (tileExtraDataEntry.discriminant != TILE_EXTRA_DATA_WARP && tileExtraDataEntry.discriminant != TILE_EXTRA_DATA_WARP_DESTINATION) continue;
-								if (tileExtraDataEntry.pairId != warpPairId) continue;
-								// Get the warp pos
-								posWarpingTo = tileExtraDataEntry.pos;
-								break;
+								for (i = 0;; i++)
+								{
+									// Skip extra data that is not the paired warp
+									TILE_EXTRA_DATA tileExtraDataEntry = tileExtraData[i];
+									if (tileExtraDataEntry.discriminant != TILE_EXTRA_DATA_WARP && tileExtraDataEntry.discriminant != TILE_EXTRA_DATA_WARP_DESTINATION) continue;
+									if (tileExtraDataEntry.pairId != warpPairId) continue;
+									// Get the warp pos
+									posWarpingTo = tileExtraDataEntry.pos;
+									break;
+								}
 							}
 							// Warp player
 							classExtraData->playerX = TILE_POS_GET_X(posWarpingTo);
@@ -448,13 +452,15 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 						// Get tile extra data
 						TILE_EXTRA_DATA extraDataEntry = roomExtraData[i];
 						TILE_POS pos;
+						TILE_POS posToMoveTo = TILE_POS_NEW(xTryingToMoveTo, yTryingToMoveTo);
 						// Skip non-warps and end at an end element
 						if (extraDataEntry.discriminant == TILE_EXTRA_DATA_END) break;
 						if (extraDataEntry.discriminant != TILE_EXTRA_DATA_WARP) continue;
 						// Skip if the player is not trying to move to this warp tile
 						pos = extraDataEntry.pos;
-						if (TILE_POS_GET_X(pos) != xTryingToMoveTo || TILE_POS_GET_Y(pos) != yTryingToMoveTo) continue;
+						if (pos != posToMoveTo) continue;
 						// Start warp animation
+						classExtraData->posWarpingFrom = posToMoveTo;
 						classExtraData->animation = ANIMATION_WARP_TO_BLACK;
 						classExtraData->animationTickCounter = 0;
 						classExtraData->roomWarpingTo = extraDataEntry.destinationRoom;

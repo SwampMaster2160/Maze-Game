@@ -12,8 +12,8 @@ enum tagROOM
 	ROOM_G_0,
 	ROOM_COUNT,
 };
-/// A room ID.
-typedef BYTE ROOM;
+/// A room ID, `-1` in a warp ill warp to the same room.
+typedef char ROOM;
 
 /// A list of animations.
 enum tagANIMATION
@@ -30,8 +30,8 @@ typedef BYTE TILE_POS;
 #define TILE_POS_GET_Y(pos) ((pos) >> 4)
 #define TILE_POS_NEW(x, y) ((x) | ((y) << 4))
 
-/// A warp pair id.
-typedef BYTE WARP_PAIR;
+/// A warp pair id, `-1` means warp to the same tile that we are warpin from.
+typedef char WARP_PAIR;
 
 /// The main data struct for the window class.
 typedef struct tagClassExtraData
@@ -60,12 +60,12 @@ typedef struct tagClassExtraData
 	ANIMATION animation;
 	BYTE animationTickCounter;
 	ROOM roomWarpingTo;
-	//TILE_POS posWarpingTo;
 	WARP_PAIR warpPair;
 	signed char movingTileDeltaX;
 	signed char movingTileDeltaY;
 	BOOL isPausedForAnimation;
 	DWORD tickTimeCarry;
+	TILE_POS posWarpingFrom;
 } ClassExtraData;
 
 /// A list of textures in the texture bitmap.
@@ -201,7 +201,6 @@ typedef int MGERROR;
 const TILE_INFO TILE_INFOS[TILE_COUNT];
 /// Info about each room, a room ID is the index.
 const ROOM_INFO ROOM_INFOS[ROOM_COUNT];
-//const BYTE ROOM[16][16];
 const LPCSTR ERROR_MESSAGES[MGERROR_COUNT - 1];
 
 const TILE ROOM_TEST_TILES[16][16];
