@@ -145,10 +145,9 @@ int Main(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, int iCmdSho
 	while (TRUE)
 	{
 		MSG windowMessage;
-		BOOL result;
-		result = GetMessageA(&windowMessage, NULL, 0, 0);
-		if (result == 0) break;
-		if (result == -1) return MGERROR_GET_MESSAGE;
+		boolResult = GetMessageA(&windowMessage, NULL, 0, 0);
+		if (boolResult == 0) break;
+		if (boolResult == -1) return MGERROR_GET_MESSAGE;
 		TranslateMessage(&windowMessage);
 		DispatchMessageA(&windowMessage);
 	}

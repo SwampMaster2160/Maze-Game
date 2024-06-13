@@ -93,12 +93,12 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 						float ceilingNorthSouthTextureTop = 1 - (ceilingNorthSouthTexture / 16 * (1. / 16.));
 						float ceilingNorthSouthTextureBottom = ceilingNorthSouthTextureTop - (1. / 16.);
 						// Get which walls should be drawn
-						BOOL drawNorth = FALSE;
-						BOOL drawEast = FALSE;
-						BOOL drawSouth = FALSE;
-						BOOL drawWest = FALSE;
-						BOOL drawTop = FALSE;
-						BOOL drawBottom = FALSE;
+						BOOLEAN drawNorth = FALSE;
+						BOOLEAN drawEast = FALSE;
+						BOOLEAN drawSouth = FALSE;
+						BOOLEAN drawWest = FALSE;
+						BOOLEAN drawTop = FALSE;
+						BOOLEAN drawBottom = FALSE;
 						if (tileFlags & TILE_FLAGS_WALL)
 						{
 							drawNorth = northTile != TILE_NULL && (!(TILE_INFOS[northTile].flags & TILE_FLAGS_WALL));
@@ -268,14 +268,14 @@ static LRESULT CALLBACK WindowProcess(HWND window, UINT message, WPARAM wParam, 
 				unsigned currentTileX;
 				unsigned currentTileY;
 				unsigned i;
-				BOOL isNorthWall;
-				BOOL isEastWall;
-				BOOL isSouthWall;
-				BOOL isWestWall;
-				BOOL isNorthEastWall;
-				BOOL isSouthEastWall;
-				BOOL isSouthWestWall;
-				BOOL isNorthWestWall;
+				BOOLEAN isNorthWall;
+				BOOLEAN isEastWall;
+				BOOLEAN isSouthWall;
+				BOOLEAN isWestWall;
+				BOOLEAN isNorthEastWall;
+				BOOLEAN isSouthEastWall;
+				BOOLEAN isSouthWestWall;
+				BOOLEAN isNorthWestWall;
 				float northWallY;
 				float southWallY;
 				float westWallX;
