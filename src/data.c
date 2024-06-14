@@ -10,6 +10,7 @@ const TILE_INFO TILE_INFOS[TILE_COUNT] =
 	{TEXTURE_STONE_BRICKS_WOOD_DOOR,          TEXTURE_STONE_BRICKS_WOOD_DOOR,          TILE_FLAGS_WALL}, // Stone bricks with wood door
 	{TEXTURE_WOOD_PLANKS,                     TEXTURE_WOOD_PLANKS_HOLE,                0              }, // Wood planks floor hole
 	{TEXTURE_WOOD_PLANKS_HOLE,                TEXTURE_WOOD_PLANKS_EXTRA_PLANKS,        0              }, // Wood planks ceiling hole
+	{TEXTURE_STONE_BRICKS_WOOD_DOOR_SKY,      TEXTURE_STONE_BRICKS_WOOD_DOOR_SKY,      TILE_FLAGS_WALL}, // Stone bricks with wood door and sky
 };
 
 const TILE_EXTRA_DATA BLANK_EXTRA_DATA[] = { TILE_EXTRA_DATA_END_NEW };

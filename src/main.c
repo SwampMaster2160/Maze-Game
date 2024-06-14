@@ -68,8 +68,8 @@ int Main(HINSTANCE instance, HINSTANCE prevInstance, PSTR szCmdLine, int iCmdSho
 	if (timer == 0) return MGERROR_CREATE_TIMER;
 	// Set window extra data
 	classExtraData.cameraRotation = PI * 1.5;
-	classExtraData.playerX = 3;
-	classExtraData.playerY = -3;
+	classExtraData.playerX = 7;
+	classExtraData.playerY = -7;
 	classExtraData.isFullscreen = FALSE;
 	classExtraData.lastRedrawTime = GetTickCount();
 	classExtraData.lastTickTime = classExtraData.lastRedrawTime;
